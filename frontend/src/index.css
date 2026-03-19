@@ -1,0 +1,80 @@
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap');
+
+@import "tailwindcss";
+
+/* ── CSS Custom Properties — Design Tokens ───────────────────────── */
+:root {
+  /* Backgrounds */
+  --bg-base:    #07080f;
+  --bg-surface: #0f1117;
+  --bg-card:    #1a1f2e;
+  --bg-card-2:  #141920;
+
+  /* Brand — Intern (violet) */
+  --intern-primary:   #7c3aed;
+  --intern-secondary: #6d28d9;
+  --intern-accent:    #a78bfa;
+  --intern-glow:      #7c3aedaa;
+
+  /* Brand — Admin (amber) */
+  --admin-primary:   #f59e0b;
+  --admin-secondary: #d97706;
+  --admin-accent:    #fbbf24;
+  --admin-glow:      #f59e0b88;
+
+  /* Status colours */
+  --success:  #22c55e;
+  --warning:  #f59e0b;
+  --danger:   #ef4444;
+  --info:     #06b6d4;
+
+  /* Task priority */
+  --priority-high:   #ef4444;
+  --priority-medium: #f97316;
+  --priority-low:    #22c55e;
+
+  /* Task status */
+  --status-pending:     #94a3b8;
+  --status-in-progress: #f97316;
+  --status-completed:   #22c55e;
+
+  /* Borders */
+  --border:       rgba(255,255,255,0.08);
+  --border-focus: rgba(124,58,237,0.50);
+
+  /* Text */
+  --text-primary:   #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted:     #475569;
+
+  /* Typography */
+  --font-display: 'Syne', sans-serif;
+  --font-body:    'DM Sans', sans-serif;
+  --font-mono:    'JetBrains Mono', 'Fira Code', monospace;
+}
+
+/* ── Base reset ──────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Scrollbar ──────────────────────────────────────────────────── */
+::-webkit-scrollbar       { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-base); }
+::-webkit-scrollbar-thumb { background: #2d3548; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #3d4a62; }
+
+/* ── Selection ──────────────────────────────────────────────────── */
+::selection { background: rgba(124,58,237,0.3); color: #fff; }
+
+/* ── Focus ring ─────────────────────────────────────────────────── */
+:focus-visible { outline: 2px solid var(--intern-primary); outline-offset: 2px; }
