@@ -1,8 +1,19 @@
 const Task = require('../models/Task');
 const User = require('../models/User');
 
+// Helper: validate that all provided intern IDs belong to this supervisor
+const validateInterns = async (internIds, supervisorId) => {
+  if (!internIds || internIds.length === 0) return true;
+  const count = await User.countDocuments({
+    _id:       { $in: internIds },
+    role:      'intern',
+    createdBy: supervisorId,
+  });
+  return count === internIds.length;
+};
+
 // ── POST /api/tasks ───────────────────────────────────────────────────────────
-// Supervisor creates task — assignedTo must be one of their own interns
+// Supervisor creates task — assignedTo is now an array of intern IDs
 const createTask = async (req, res) => {
   try {
     const { title, description, priority, dueDate, assignedTo } = req.body;
@@ -11,14 +22,17 @@ const createTask = async (req, res) => {
       return res.status(400).json({ message: 'Task title is required' });
     }
 
-    // If assignedTo provided, verify the intern belongs to this supervisor
-    if (assignedTo) {
-      const intern = await User.findOne({
-        _id:       assignedTo,
-        role:      'intern',
-        createdBy: req.user._id,
-      });
-      if (!intern) {
+    // Normalize: accept single ID string or array
+    const assignedIds = assignedTo
+      ? Array.isArray(assignedTo)
+        ? assignedTo.filter(Boolean)
+        : [assignedTo].filter(Boolean)
+      : [];
+
+    // Verify every intern belongs to this supervisor
+    if (assignedIds.length > 0) {
+      const valid = await validateInterns(assignedIds, req.user._id);
+      if (!valid) {
         return res.status(403).json({ message: 'You can only assign tasks to your own interns' });
       }
     }
@@ -27,9 +41,9 @@ const createTask = async (req, res) => {
       title,
       description,
       priority,
-      dueDate:    dueDate    || null,
-      assignedTo: assignedTo || null,
-      createdBy:  req.user._id,  // ← locked to this supervisor
+      dueDate:    dueDate       || null,
+      assignedTo: assignedIds,          // ← array
+      createdBy:  req.user._id,
     });
 
     await task.populate('assignedTo', 'name email');
@@ -40,10 +54,9 @@ const createTask = async (req, res) => {
 };
 
 // ── GET /api/tasks ────────────────────────────────────────────────────────────
-// Supervisor sees ONLY tasks they created
 const getAllTasks = async (req, res) => {
   try {
-    const tasks = await Task.find({ createdBy: req.user._id })  // ← own tasks only
+    const tasks = await Task.find({ createdBy: req.user._id })
       .populate('assignedTo', 'name email')
       .populate('createdBy',  'name')
       .sort({ createdAt: -1 });
@@ -55,7 +68,7 @@ const getAllTasks = async (req, res) => {
 };
 
 // ── GET /api/tasks/my ─────────────────────────────────────────────────────────
-// Intern sees tasks assigned to them ONLY
+// Intern sees tasks where their ID is in the assignedTo array
 const getMyTasks = async (req, res) => {
   try {
     const tasks = await Task.find({ assignedTo: req.user._id })
@@ -68,30 +81,35 @@ const getMyTasks = async (req, res) => {
 };
 
 // ── PATCH /api/tasks/:id ──────────────────────────────────────────────────────
-// Supervisor updates own task only
 const updateTask = async (req, res) => {
   try {
     const task = await Task.findOne({
       _id:       req.params.id,
-      createdBy: req.user._id,   // ← can only edit own tasks
+      createdBy: req.user._id,
     });
     if (!task) {
       return res.status(404).json({ message: 'Task not found or not authorized' });
     }
 
-    // If re-assigning, verify new intern belongs to this supervisor
-    if (req.body.assignedTo) {
-      const intern = await User.findOne({
-        _id:       req.body.assignedTo,
-        role:      'intern',
-        createdBy: req.user._id,
-      });
-      if (!intern) {
-        return res.status(403).json({ message: 'You can only assign tasks to your own interns' });
+    // Handle assignedTo update — normalize to array
+    if (req.body.assignedTo !== undefined) {
+      const assignedIds = Array.isArray(req.body.assignedTo)
+        ? req.body.assignedTo.filter(Boolean)
+        : req.body.assignedTo
+          ? [req.body.assignedTo]
+          : [];
+
+      if (assignedIds.length > 0) {
+        const valid = await validateInterns(assignedIds, req.user._id);
+        if (!valid) {
+          return res.status(403).json({ message: 'You can only assign tasks to your own interns' });
+        }
       }
+      task.assignedTo = assignedIds;
+      delete req.body.assignedTo; // handled above
     }
 
-    const allowed = ['title', 'description', 'priority', 'status', 'dueDate', 'assignedTo'];
+    const allowed = ['title', 'description', 'priority', 'status', 'dueDate'];
     allowed.forEach((field) => {
       if (req.body[field] !== undefined) task[field] = req.body[field];
     });
@@ -105,12 +123,11 @@ const updateTask = async (req, res) => {
 };
 
 // ── DELETE /api/tasks/:id ─────────────────────────────────────────────────────
-// Supervisor deletes own task only
 const deleteTask = async (req, res) => {
   try {
     const task = await Task.findOneAndDelete({
       _id:       req.params.id,
-      createdBy: req.user._id,   // ← can only delete own tasks
+      createdBy: req.user._id,
     });
     if (!task) {
       return res.status(404).json({ message: 'Task not found or not authorized' });

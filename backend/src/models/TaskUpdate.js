@@ -1,9 +1,5 @@
 const mongoose = require('mongoose');
 
-// taskUpdates collection
-// Fields: taskId (nullable), createdBy (intern), type (update/blocker/self_task),
-//         content, createdAt, locked
-// Extra: attachments[] — for zip/pdf/word/image uploads via Cloudinary
 
 const attachmentSchema = new mongoose.Schema(
   {

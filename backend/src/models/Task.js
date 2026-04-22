@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 // tasks collection
-// Fields: title, description, createdBy, assignedTo, priority, status, dueDate, timestamps
+// assignedTo is now an ARRAY to support multiple intern assignments per task
 const taskSchema = new mongoose.Schema(
   {
     title: {
@@ -19,10 +19,11 @@ const taskSchema = new mongoose.Schema(
       ref:      'User',
       required: true,
     },
+    // ← Changed from single ObjectId to array of ObjectIds
     assignedTo: {
-      type:    mongoose.Schema.Types.ObjectId,
+      type:    [mongoose.Schema.Types.ObjectId],
       ref:     'User',
-      default: null,
+      default: [],
     },
     priority: {
       type:    String,
@@ -40,7 +41,7 @@ const taskSchema = new mongoose.Schema(
     },
   },
   {
-    timestamps: true, // createdAt + updatedAt
+    timestamps: true,
   }
 );
 
