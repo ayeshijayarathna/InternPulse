@@ -1,8 +1,10 @@
 const User        = require('../models/User');
 const cloudinary  = require('../config/cloudinary');
 const { uploadBufferToCloudinary, isImage } = require('../middleware/upload');
+const { sendWelcomeMail }    = require('../services/emailService');
+const { createNotification } = require('../services/notificationService');
 
-// ── GET /api/users/interns ────────────────────────────────────────────────────
+// GET /api/users/interns
 // Supervisor: own interns only (createdBy = req.user._id)
 const getInterns = async (req, res) => {
   try {
@@ -20,7 +22,7 @@ const getInterns = async (req, res) => {
   }
 };
 
-// ── POST /api/users/intern ────────────────────────────────────────────────────
+// POST /api/users/intern
 const createIntern = async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -53,6 +55,21 @@ const createIntern = async (req, res) => {
 
     const safe = intern.toObject();
     delete safe.passwordHash;
+
+    // Send welcome email with credentials 
+    sendWelcomeMail({ name, email, password }).catch(err =>
+      console.error('Welcome email error:', err)
+    );
+
+    // In-app welcome notification
+    const io = req.app.locals.io;
+    createNotification(io, {
+      recipient: intern._id,
+      type:      'welcome',
+      title:     '👋 Welcome to InternPulse!',
+      message:   `Hi ${name}, your account has been created. Check your email for login credentials.`,
+    });
+
     res.status(201).json(safe);
   } catch (err) {
     console.error('createIntern error:', err);
@@ -60,7 +77,7 @@ const createIntern = async (req, res) => {
   }
 };
 
-// ── PATCH /api/users/intern/:id ───────────────────────────────────────────────
+// PATCH /api/users/intern/:id 
 const updateIntern = async (req, res) => {
   try {
     const intern = await User.findOne({
@@ -95,7 +112,7 @@ const updateIntern = async (req, res) => {
   }
 };
 
-// ── PATCH /api/users/intern/:id/toggle (activate / deactivate) ───────────────
+// PATCH /api/users/intern/:id/toggle (activate / deactivate)
 // Keep original name: toggleInternStatus (used in original routes.js)
 const toggleInternStatus = async (req, res) => {
   try {
@@ -118,7 +135,7 @@ const toggleInternStatus = async (req, res) => {
   }
 };
 
-// ── DELETE /api/users/intern/:id ──────────────────────────────────────────────
+//  DELETE /api/users/intern/:id
 const deleteIntern = async (req, res) => {
   try {
     const intern = await User.findOne({
@@ -139,7 +156,7 @@ const deleteIntern = async (req, res) => {
   }
 };
 
-// ── PATCH /api/users/avatar (original — keep) ────────────────────────────────
+// PATCH /api/users/avatar (original — keep)
 const updateAvatar = async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
@@ -163,7 +180,7 @@ const updateAvatar = async (req, res) => {
   }
 };
 
-// ── Original export kept  ────────────────────────────────────
+//Original export kept 
 module.exports = {
   getInterns,
   createIntern,
