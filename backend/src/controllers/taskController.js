@@ -1,5 +1,7 @@
 const Task = require('../models/Task');
 const User = require('../models/User');
+const { sendTaskAssignedMail }   = require('../services/emailService');
+const { createNotification }     = require('../services/notificationService');
 
 // Helper: validate that all provided intern IDs belong to this supervisor
 const validateInterns = async (internIds, supervisorId) => {
@@ -12,7 +14,7 @@ const validateInterns = async (internIds, supervisorId) => {
   return count === internIds.length;
 };
 
-// ── POST /api/tasks ───────────────────────────────────────────────────────────
+// POST /api/tasks 
 // Supervisor creates task — assignedTo is now an array of intern IDs
 const createTask = async (req, res) => {
   try {
@@ -47,13 +49,37 @@ const createTask = async (req, res) => {
     });
 
     await task.populate('assignedTo', 'name email');
+
+    //Notify & email each assigned intern 
+    const io = req.app.locals.io;
+    for (const intern of task.assignedTo) {
+      // In-app notification
+      createNotification(io, {
+        recipient: intern._id,
+        type:      'task_assigned',
+        title:     '📋 New Task Assigned',
+        message:   `You have been assigned a new task: "${task.title}"`,
+        taskId:    task._id,
+      });
+
+      // Email
+      sendTaskAssignedMail({
+        internName:      intern.name,
+        internEmail:     intern.email,
+        taskTitle:       task.title,
+        taskDescription: task.description,
+        dueDate:         task.dueDate,
+        priority:        task.priority,
+      }).catch(err => console.error('Task assign email error:', err));
+    }
+
     res.status(201).json(task);
   } catch (err) {
     res.status(500).json({ message: 'Server error', error: err.message });
   }
 };
 
-// ── GET /api/tasks ────────────────────────────────────────────────────────────
+// GET /api/tasks 
 const getAllTasks = async (req, res) => {
   try {
     const tasks = await Task.find({ createdBy: req.user._id })
@@ -67,7 +93,7 @@ const getAllTasks = async (req, res) => {
   }
 };
 
-// ── GET /api/tasks/my ─────────────────────────────────────────────────────────
+// GET /api/tasks/my 
 // Intern sees tasks where their ID is in the assignedTo array
 const getMyTasks = async (req, res) => {
   try {
@@ -80,7 +106,7 @@ const getMyTasks = async (req, res) => {
   }
 };
 
-// ── PATCH /api/tasks/:id ──────────────────────────────────────────────────────
+//  PATCH /api/tasks/:id
 const updateTask = async (req, res) => {
   try {
     const task = await Task.findOne({
@@ -122,7 +148,7 @@ const updateTask = async (req, res) => {
   }
 };
 
-// ── DELETE /api/tasks/:id ─────────────────────────────────────────────────────
+// DELETE /api/tasks/:id
 const deleteTask = async (req, res) => {
   try {
     const task = await Task.findOneAndDelete({
