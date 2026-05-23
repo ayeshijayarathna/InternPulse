@@ -2,8 +2,9 @@ const TaskUpdate = require('../models/TaskUpdate');
 const Task       = require('../models/Task');
 const User       = require('../models/User');
 const { uploadBufferToCloudinary, isImage } = require('../middleware/upload');
+const { createNotification } = require('../services/notificationService');
 
-// ── POST /api/updates ─────────────────────────────────────────────────────────
+// POST /api/updates
 // Intern submits update / self_task (locked after submit)
 const createUpdate = async (req, res) => {
   try {
@@ -53,13 +54,29 @@ const createUpdate = async (req, res) => {
 
     await update.populate('taskId',    'title');
     await update.populate('createdBy', 'name email');
+
+    // Notify supervisor
+    // Find the supervisor who created this intern
+    const internUser = await User.findById(req.user._id).select('createdBy name');
+    if (internUser?.createdBy) {
+      const io = req.app.locals.io;
+      createNotification(io, {
+        recipient: internUser.createdBy,
+        type:      'submission_received',
+        title:     '📨 New Submission Received',
+        message:   `${internUser.name} submitted an update${update.taskId?.title ? ` for task: "${update.taskId.title}"` : ''}.`,
+        taskId:    taskId || null,
+        updateId:  update._id,
+      });
+    }
+
     res.status(201).json(update);
   } catch (err) {
     res.status(500).json({ message: 'Server error', error: err.message });
   }
 };
 
-// ── GET /api/updates ──────────────────────────────────────────────────────────
+// GET /api/updates 
 // Supervisor: sees submissions from their own interns ONLY
 const getAllUpdates = async (req, res) => {
   try {
@@ -82,7 +99,7 @@ const getAllUpdates = async (req, res) => {
   }
 };
 
-// ── GET /api/updates/my ───────────────────────────────────────────────────────
+// GET /api/updates/my 
 // Intern: own submissions only (read-only)
 const getMyUpdates = async (req, res) => {
   try {
@@ -96,7 +113,7 @@ const getMyUpdates = async (req, res) => {
   }
 };
 
-// ── Edit / Delete blocked ─────────────────────────────────────────────────────
+// Edit / Delete blocked 
 const blockEdit = (req, res) => {
   res.status(403).json({ message: 'Submissions are locked and cannot be edited' });
 };
