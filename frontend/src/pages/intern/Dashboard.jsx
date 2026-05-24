@@ -3,40 +3,41 @@ import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import {
   FiGrid, FiCheckSquare, FiFileText, FiPlusCircle,
-  FiLogOut, FiMenu, FiX
+  FiLogOut, FiMenu, FiX, FiBell
 } from 'react-icons/fi';
 
-import NotificationBell  from '../../components/common/NotificationBell';
-import MyTasksPage       from './sections/MyTasksPage';
-import MySubmissionsPage from './sections/MySubmissionsPage';
-import SubmitUpdatePage  from './sections/SubmitUpdatePage';
-import OverviewPage      from './sections/OverviewPage';
+import { useNotifications } from '../../context/NotificationContext';
+import MyTasksPage          from './sections/MyTasksPage';
+import MySubmissionsPage    from './sections/MySubmissionsPage';
+import SubmitUpdatePage     from './sections/SubmitUpdatePage';
+import OverviewPage         from './sections/OverviewPage';
+import NotificationsPage    from './sections/intern_NotificationsPage';
 
 export default function InternDashboard() {
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
-  const [activeTab, setActiveTab]     = useState('overview');
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { user, logout }                  = useAuth();
+  const { unreadCount }                   = useNotifications();
+  const navigate                          = useNavigate();
+  const [activeTab, setActiveTab]         = useState('overview');
+  const [sidebarOpen, setSidebarOpen]     = useState(false);
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
+  const handleLogout = () => { logout(); navigate('/login'); };
 
   const navItems = [
-    { id: 'overview',    label: 'Overview',      icon: FiGrid        },
-    { id: 'tasks',       label: 'My Tasks',      icon: FiCheckSquare },
-    { id: 'submit',      label: 'Submit Update', icon: FiPlusCircle  },
-    { id: 'submissions', label: 'My Submissions', icon: FiFileText   },
+    { id: 'overview',       label: 'Overview',        icon: FiGrid        },
+    { id: 'tasks',          label: 'My Tasks',         icon: FiCheckSquare },
+    { id: 'submit',         label: 'Submit Update',    icon: FiPlusCircle  },
+    { id: 'submissions',    label: 'My Submissions',   icon: FiFileText    },
+    { id: 'notifications',  label: 'Notifications',    icon: FiBell, badge: unreadCount },
   ];
 
   const renderContent = () => {
     switch (activeTab) {
-      case 'overview':    return <OverviewPage setActiveTab={setActiveTab} />;
-      case 'tasks':       return <MyTasksPage />;
-      case 'submit':      return <SubmitUpdatePage />;
-      case 'submissions': return <MySubmissionsPage />;
-      default:            return <OverviewPage setActiveTab={setActiveTab} />;
+      case 'overview':       return <OverviewPage setActiveTab={setActiveTab} />;
+      case 'tasks':          return <MyTasksPage />;
+      case 'submit':         return <SubmitUpdatePage />;
+      case 'submissions':    return <MySubmissionsPage />;
+      case 'notifications':  return <NotificationsPage />;
+      default:               return <OverviewPage setActiveTab={setActiveTab} />;
     }
   };
 
@@ -56,8 +57,19 @@ export default function InternDashboard() {
             </h1>
           </div>
           <div className="flex items-center gap-2">
-            {/* Notification Bell - mobile */}
-            <NotificationBell accentColor="var(--intern-primary)" />
+            {/* Bell — mobile */}
+            <button
+              onClick={() => { setActiveTab('notifications'); setSidebarOpen(false); }}
+              className="relative p-2 rounded-xl hover:bg-white/5 transition-all"
+            >
+              <FiBell className="w-5 h-5 text-white" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] rounded-full flex items-center justify-center text-[10px] font-bold text-white"
+                      style={{ background: 'var(--intern-primary)', padding: '0 4px' }}>
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </span>
+              )}
+            </button>
             {user?.avatar?.url
               ? <img src={user.avatar.url} alt={user.name} className="w-8 h-8 rounded-full" />
               : (
@@ -80,28 +92,19 @@ export default function InternDashboard() {
 
             {/* Logo */}
             <div className="p-6 border-b hidden lg:block" style={{ borderColor: 'var(--border)' }}>
-              <div className="flex items-center justify-between">
-                <div>
-                  <h1 className="text-2xl font-bold bg-clip-text text-transparent"
-                      style={{ fontFamily: 'var(--font-display)', backgroundImage: 'linear-gradient(135deg, var(--intern-primary), var(--intern-accent))' }}>
-                    InternPulse
-                  </h1>
-                  <p className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>Intern Dashboard</p>
-                </div>
-                {/* Notification Bell - desktop */}
-                <NotificationBell accentColor="var(--intern-primary)" />
-              </div>
+              <h1 className="text-2xl font-bold bg-clip-text text-transparent"
+                  style={{ fontFamily: 'var(--font-display)', backgroundImage: 'linear-gradient(135deg, var(--intern-primary), var(--intern-accent))' }}>
+                InternPulse
+              </h1>
+              <p className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>Intern Dashboard</p>
             </div>
 
             {/* User Profile */}
             <div className="p-6 border-b" style={{ borderColor: 'var(--border)' }}>
               <div className="flex items-center gap-3">
                 {user?.avatar?.url
-                  ? (
-                    <img src={user.avatar.url} alt={user.name}
-                         className="w-12 h-12 rounded-full border-2"
-                         style={{ borderColor: 'var(--intern-primary)' }} />
-                  ) : (
+                  ? <img src={user.avatar.url} alt={user.name} className="w-12 h-12 rounded-full border-2" style={{ borderColor: 'var(--intern-primary)' }} />
+                  : (
                     <div className="w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold text-white"
                          style={{ background: 'linear-gradient(135deg, var(--intern-primary), var(--intern-secondary))' }}>
                       {user?.name?.charAt(0).toUpperCase()}
@@ -137,7 +140,19 @@ export default function InternDashboard() {
                       }}
                     >
                       <Icon className="w-5 h-5" />
-                      <span>{item.label}</span>
+                      <span className="flex-1 text-left">{item.label}</span>
+                      {/* Unread badge on nav item */}
+                      {item.badge > 0 && (
+                        <span
+                          className="min-w-[20px] h-5 rounded-full flex items-center justify-center text-[11px] font-bold px-1"
+                          style={{
+                            background: isActive ? 'rgba(255,255,255,0.3)' : 'var(--intern-primary)',
+                            color: isActive ? '#fff' : '#fff',
+                          }}
+                        >
+                          {item.badge > 99 ? '99+' : item.badge}
+                        </span>
+                      )}
                     </button>
                   );
                 })}
