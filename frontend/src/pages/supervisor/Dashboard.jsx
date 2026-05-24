@@ -3,13 +3,15 @@ import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { 
   FiActivity, FiUsers, FiCheckSquare, FiFileText, 
-  FiLogOut, FiMenu, FiX, FiUser 
+  FiLogOut, FiMenu, FiX
 } from 'react-icons/fi';
 
+import NotificationBell from '../../components/common/NotificationBell';
+
 // Import section pages
-import OverviewPage from './sections/OverviewPage';
-import InternsPage from './sections/InternsPage';
-import TasksPage from './sections/TasksPage';
+import OverviewPage    from './sections/OverviewPage';
+import InternsPage     from './sections/InternsPage';
+import TasksPage       from './sections/TasksPage';
 import SubmissionsPage from './sections/SubmissionsPage';
 
 export default function SupervisorDashboard() {
@@ -24,19 +26,19 @@ export default function SupervisorDashboard() {
   };
 
   const navItems = [
-    { id: 'overview', label: 'Overview', icon: FiActivity },
-    { id: 'interns', label: 'Interns', icon: FiUsers },
-    { id: 'tasks', label: 'Tasks', icon: FiCheckSquare },
-    { id: 'submissions', label: 'Submissions', icon: FiFileText }
+    { id: 'overview',     label: 'Overview',     icon: FiActivity    },
+    { id: 'interns',      label: 'Interns',       icon: FiUsers       },
+    { id: 'tasks',        label: 'Tasks',         icon: FiCheckSquare },
+    { id: 'submissions',  label: 'Submissions',   icon: FiFileText    },
   ];
 
   const renderContent = () => {
     switch (activeTab) {
-      case 'overview': return <OverviewPage />;
-      case 'interns': return <InternsPage />;
-      case 'tasks': return <TasksPage />;
+      case 'overview':    return <OverviewPage />;
+      case 'interns':     return <InternsPage />;
+      case 'tasks':       return <TasksPage />;
       case 'submissions': return <SubmissionsPage />;
-      default: return <OverviewPage />;
+      default:            return <OverviewPage />;
     }
   };
 
@@ -47,10 +49,7 @@ export default function SupervisorDashboard() {
            style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="p-2 rounded-lg hover:bg-white/5"
-            >
+            <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 rounded-lg hover:bg-white/5">
               {sidebarOpen ? <FiX className="w-5 h-5 text-white" /> : <FiMenu className="w-5 h-5 text-white" />}
             </button>
             <h1 className="text-lg font-bold text-white" style={{ fontFamily: 'var(--font-display)' }}>
@@ -58,6 +57,8 @@ export default function SupervisorDashboard() {
             </h1>
           </div>
           <div className="flex items-center gap-2">
+            {/* Notification Bell - mobile */}
+            <NotificationBell accentColor="var(--admin-primary)" />
             {user?.avatar?.url ? (
               <img src={user.avatar.url} alt={user.name} className="w-8 h-8 rounded-full" />
             ) : (
@@ -74,28 +75,31 @@ export default function SupervisorDashboard() {
         <aside className={`
           fixed lg:sticky top-0 left-0 h-screen w-72 border-r z-40 transition-transform lg:translate-x-0
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
-        `}
-        style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
+        `} style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
           <div className="flex flex-col h-full">
+
             {/* Logo */}
             <div className="p-6 border-b hidden lg:block" style={{ borderColor: 'var(--border)' }}>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-[var(--admin-primary)] to-[var(--admin-secondary)] bg-clip-text text-transparent"
-                  style={{ fontFamily: 'var(--font-display)' }}>
-                InternPulse
-              </h1>
-              <p className="text-xs text-[var(--text-secondary)] mt-1">Supervisor Dashboard</p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <h1 className="text-2xl font-bold bg-gradient-to-r from-[var(--admin-primary)] to-[var(--admin-secondary)] bg-clip-text text-transparent"
+                      style={{ fontFamily: 'var(--font-display)' }}>
+                    InternPulse
+                  </h1>
+                  <p className="text-xs text-[var(--text-secondary)] mt-1">Supervisor Dashboard</p>
+                </div>
+                {/* Notification Bell - desktop sidebar */}
+                <NotificationBell accentColor="var(--admin-primary)" />
+              </div>
             </div>
 
             {/* User Profile */}
             <div className="p-6 border-b" style={{ borderColor: 'var(--border)' }}>
               <div className="flex items-center gap-3">
                 {user?.avatar?.url ? (
-                  <img 
-                    src={user.avatar.url} 
-                    alt={user.name} 
-                    className="w-12 h-12 rounded-full border-2"
-                    style={{ borderColor: 'var(--admin-primary)' }}
-                  />
+                  <img src={user.avatar.url} alt={user.name}
+                       className="w-12 h-12 rounded-full border-2"
+                       style={{ borderColor: 'var(--admin-primary)' }} />
                 ) : (
                   <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[var(--admin-primary)] to-[var(--admin-secondary)] flex items-center justify-center text-xl font-bold text-white">
                     {user?.name?.charAt(0).toUpperCase()}
@@ -106,10 +110,7 @@ export default function SupervisorDashboard() {
                   <div className="text-xs text-[var(--text-secondary)] truncate">{user?.email}</div>
                   <div className="mt-1">
                     <span className="inline-block px-2 py-0.5 rounded text-xs font-semibold"
-                          style={{ 
-                            background: 'linear-gradient(135deg, var(--admin-primary), var(--admin-secondary))',
-                            color: '#000'
-                          }}>
+                          style={{ background: 'linear-gradient(135deg, var(--admin-primary), var(--admin-secondary))', color: '#000' }}>
                       Supervisor
                     </span>
                   </div>
@@ -123,18 +124,14 @@ export default function SupervisorDashboard() {
                 {navItems.map((item) => {
                   const Icon = item.icon;
                   const isActive = activeTab === item.id;
-                  
                   return (
                     <button
                       key={item.id}
-                      onClick={() => {
-                        setActiveTab(item.id);
-                        setSidebarOpen(false);
-                      }}
+                      onClick={() => { setActiveTab(item.id); setSidebarOpen(false); }}
                       className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all"
                       style={{
                         background: isActive ? 'linear-gradient(135deg, var(--admin-primary), var(--admin-secondary))' : 'transparent',
-                        color: isActive ? '#000' : 'var(--text-secondary)'
+                        color: isActive ? '#000' : 'var(--text-secondary)',
                       }}
                     >
                       <Icon className="w-5 h-5" />
@@ -145,7 +142,7 @@ export default function SupervisorDashboard() {
               </div>
             </nav>
 
-            {/* Logout Button */}
+            {/* Logout */}
             <div className="p-4 border-t" style={{ borderColor: 'var(--border)' }}>
               <button
                 onClick={handleLogout}
@@ -160,10 +157,8 @@ export default function SupervisorDashboard() {
 
         {/* Mobile Overlay */}
         {sidebarOpen && (
-          <div 
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-30 lg:hidden"
-            onClick={() => setSidebarOpen(false)}
-          />
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-30 lg:hidden"
+               onClick={() => setSidebarOpen(false)} />
         )}
 
         {/* Main Content */}

@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
-import ProtectedRoute   from './components/common/ProtectedRoute';
+import { AuthProvider }             from './context/AuthContext';
+import { NotificationProvider }     from './context/NotificationContext';
+import ProtectedRoute               from './components/common/ProtectedRoute';
 
 import InternLogin      from './pages/auth/Internlogin';
 import AdminLogin       from './pages/auth/Adminlogin';
@@ -13,46 +14,48 @@ import SuperAdminDashboard  from './pages/superadmin/Dashboard';
 export default function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          {/* ── Public ─────────────────────────────────────────── */}
-          <Route path="/login"        element={<InternLogin />} />
-          <Route path="/system/admin" element={<AdminLogin />} />
+      <NotificationProvider>
+        <BrowserRouter>
+          <Routes>
+            {/*Public */}
+            <Route path="/login"        element={<InternLogin />} />
+            <Route path="/system/admin" element={<AdminLogin />} />
 
-          {/* Super admin login — obfuscated URL */}
-          <Route path="/sa-login" element={<SuperAdminLogin />} />
+            {/* Super admin login — obfuscated URL */}
+            <Route path="/sa-login" element={<SuperAdminLogin />} />
 
-          {/* ── Intern ─────────────────────────────────────────── */}
-          <Route path="/intern/dashboard"
-            element={
-              <ProtectedRoute role="intern">
-                <InternDashboard />
-              </ProtectedRoute>
-            }
-          />
+            {/*Intern */}
+            <Route path="/intern/dashboard"
+              element={
+                <ProtectedRoute role="intern">
+                  <InternDashboard />
+                </ProtectedRoute>
+              }
+            />
 
-          {/* ── Supervisor ─────────────────────────────────────── */}
-          <Route path="/supervisor/dashboard"
-            element={
-              <ProtectedRoute role="supervisor">
-                <SupervisorDashboard />
-              </ProtectedRoute>
-            }
-          />
+            {/* Supervisor*/}
+            <Route path="/supervisor/dashboard"
+              element={
+                <ProtectedRoute role="supervisor">
+                  <SupervisorDashboard />
+                </ProtectedRoute>
+              }
+            />
 
-          {/* ── Super Admin ────────────────────────────────────── */}
-          <Route path="/superadmin/dashboard"
-            element={
-              <ProtectedRoute role="super_admin">
-                <SuperAdminDashboard />
-              </ProtectedRoute>
-            }
-          />
+            {/*Super Admin */}
+            <Route path="/superadmin/dashboard"
+              element={
+                <ProtectedRoute role="super_admin">
+                  <SuperAdminDashboard />
+                </ProtectedRoute>
+              }
+            />
 
-          {/* ── Catch-all ──────────────────────────────────────── */}
-          <Route path="*" element={<Navigate to="/login" replace />} />
-        </Routes>
-      </BrowserRouter>
+            {/* Catch-all  */}
+            <Route path="*" element={<Navigate to="/login" replace />} />
+          </Routes>
+        </BrowserRouter>
+      </NotificationProvider>
     </AuthProvider>
   );
 }
