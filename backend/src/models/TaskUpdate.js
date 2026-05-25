@@ -1,25 +1,18 @@
 const mongoose = require('mongoose');
 
-
 const attachmentSchema = new mongoose.Schema(
   {
-    url:          { type: String, required: true },  // Cloudinary secure URL
-    publicId:     { type: String, required: true },  // Cloudinary public_id
-    originalName: { type: String, required: true },  // Original filename
-    fileType:     { type: String, required: true },  // MIME type
-    fileSize:     { type: Number },                  // Size in bytes
-    resourceType: {
-      type:    String,
-      enum:    ['image', 'raw'],
-      default: 'raw',
-    },
+    filename:     { type: String, required: true }, // saved filename on disk
+    originalName: { type: String, required: true }, // original upload name
+    fileType:     { type: String, required: true }, // MIME type
+    fileSize:     { type: Number },                 // bytes
+    path:         { type: String },                 // absolute server path (internal)
   },
   { _id: false }
 );
 
 const taskUpdateSchema = new mongoose.Schema(
   {
-    // nullable — intern can submit a self_task without linking to a task
     taskId: {
       type:    mongoose.Schema.Types.ObjectId,
       ref:     'Task',
@@ -40,20 +33,16 @@ const taskUpdateSchema = new mongoose.Schema(
       required: [true, 'Content is required'],
       trim:     true,
     },
-    // locked = true always — intern CANNOT edit or delete after submit (PDF rule)
     locked: {
       type:    Boolean,
       default: true,
     },
-    // Extra: file attachments (pdf, word, zip, images)
     attachments: {
       type:    [attachmentSchema],
       default: [],
     },
   },
-  {
-    timestamps: true, // createdAt + updatedAt
-  }
+  { timestamps: true }
 );
 
 module.exports = mongoose.model('TaskUpdate', taskUpdateSchema);

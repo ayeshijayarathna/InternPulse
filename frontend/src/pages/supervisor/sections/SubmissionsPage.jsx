@@ -1,15 +1,40 @@
 import { useState, useEffect } from 'react';
 import {
   FiFileText, FiUser, FiClock, FiCheckCircle,
-  FiDownload, FiPaperclip, FiRefreshCw, FiZap
+  FiDownload, FiPaperclip, FiRefreshCw, FiZap, FiImage
 } from 'react-icons/fi';
 import axiosInstance from '../../../api/axiosInstance';
 
-// Only 2 types shown: submission (update) and self_task
 const TYPE_META = {
-  update:    { label: 'Submission',  icon: FiCheckCircle, color: '#3b82f6', bg: 'rgba(59,130,246,0.1)',  border: 'rgba(59,130,246,0.25)' },
-  self_task: { label: 'Self Task',   icon: FiZap,         color: '#a78bfa', bg: 'rgba(167,139,250,0.1)', border: 'rgba(167,139,250,0.25)' },
+  update:    { label: 'Submission', icon: FiCheckCircle, color: '#3b82f6', bg: 'rgba(59,130,246,0.1)',  border: 'rgba(59,130,246,0.25)' },
+  self_task: { label: 'Self Task',  icon: FiZap,         color: '#a78bfa', bg: 'rgba(167,139,250,0.1)', border: 'rgba(167,139,250,0.25)' },
 };
+
+// Download via protected API endpoint 
+const downloadFile = async (filename, originalName) => {
+  try {
+    const token = localStorage.getItem('token');
+    const res   = await fetch(
+      `${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/files/${filename}`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    if (!res.ok) throw new Error('Download failed');
+    const blob    = await res.blob();
+    const blobUrl = window.URL.createObjectURL(blob);
+    const a       = document.createElement('a');
+    a.href        = blobUrl;
+    a.download    = originalName || filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(blobUrl);
+  } catch (err) {
+    console.error('Download error:', err);
+    alert('File download failed.');
+  }
+};
+
+const isImageMime = (mime) => mime?.startsWith('image/');
 
 export default function SubmissionsPage() {
   const [submissions, setSubmissions] = useState([]);
@@ -22,7 +47,6 @@ export default function SubmissionsPage() {
     setLoading(true);
     try {
       const res = await axiosInstance.get('/updates');
-      // Exclude blockers from supervisor view
       setSubmissions(res.data.filter(s => s.type !== 'blocker'));
     } catch { /* silent */ }
     finally { setLoading(false); }
@@ -40,26 +64,9 @@ export default function SubmissionsPage() {
 
   const filterTabs = [
     { id: 'all',       label: 'All',         count: counts.all       },
-    { id: 'update',    label: 'Submissions', count: counts.update    },
-    { id: 'self_task', label: 'Self Tasks',  count: counts.self_task },
+    { id: 'update',    label: 'Submissions',  count: counts.update    },
+    { id: 'self_task', label: 'Self Tasks',   count: counts.self_task },
   ];
-
-  const handleDownload = async (url, originalName) => {
-    try {
-      const response = await fetch(url);
-      const blob = await response.blob();
-      const blobUrl = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = blobUrl;
-      a.download = originalName || 'attachment';
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(blobUrl);
-    } catch {
-      window.open(url, '_blank');
-    }
-  };
 
   if (loading) {
     return (
@@ -72,10 +79,12 @@ export default function SubmissionsPage() {
 
   return (
     <div className="space-y-6">
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[var(--admin-primary)] to-[var(--admin-secondary)] flex items-center justify-center">
+          <div className="w-12 h-12 rounded-2xl flex items-center justify-center"
+               style={{ background: 'linear-gradient(135deg,var(--admin-primary),var(--admin-secondary))' }}>
             <FiFileText className="w-6 h-6 text-white" />
           </div>
           <div>
@@ -97,14 +106,13 @@ export default function SubmissionsPage() {
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4">
         {[
-          { label: 'Total',      value: counts.all,       color: '#94a3b8' },
-          { label: 'Submissions', value: counts.update,   color: '#3b82f6' },
-          { label: 'Self Tasks', value: counts.self_task, color: '#a78bfa' },
+          { label: 'Total',       value: counts.all,       color: '#94a3b8' },
+          { label: 'Submissions', value: counts.update,    color: '#3b82f6' },
+          { label: 'Self Tasks',  value: counts.self_task, color: '#a78bfa' },
         ].map(stat => (
           <div key={stat.label} className="p-4 rounded-xl border"
                style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
-            <div className="text-2xl font-bold text-white mb-1"
-                 style={{ fontFamily: 'var(--font-display)', color: stat.color }}>
+            <div className="text-2xl font-bold mb-1" style={{ color: stat.color }}>
               {stat.value}
             </div>
             <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>{stat.label}</div>
@@ -115,18 +123,15 @@ export default function SubmissionsPage() {
       {/* Filter tabs */}
       <div className="flex items-center gap-2">
         {filterTabs.map(tab => (
-          <button
-            key={tab.id}
-            onClick={() => setFilter(tab.id)}
-            className="px-4 py-2 rounded-xl text-sm font-semibold transition-all"
-            style={{
-              background: filter === tab.id
-                ? 'linear-gradient(135deg, var(--admin-primary), var(--admin-secondary))'
-                : 'var(--bg-card)',
-              color:  filter === tab.id ? '#000' : 'var(--text-secondary)',
-              border: filter === tab.id ? 'none' : '1px solid var(--border)',
-            }}
-          >
+          <button key={tab.id} onClick={() => setFilter(tab.id)}
+                  className="px-4 py-2 rounded-xl text-sm font-semibold transition-all"
+                  style={{
+                    background: filter === tab.id
+                      ? 'linear-gradient(135deg,var(--admin-primary),var(--admin-secondary))'
+                      : 'var(--bg-card)',
+                    color:  filter === tab.id ? '#000' : 'var(--text-secondary)',
+                    border: filter === tab.id ? 'none' : '1px solid var(--border)',
+                  }}>
             {tab.label} ({tab.count})
           </button>
         ))}
@@ -142,9 +147,8 @@ export default function SubmissionsPage() {
       ) : (
         <div className="space-y-4">
           {filtered.map((sub) => {
-            const meta    = TYPE_META[sub.type] || TYPE_META.update;
-            const Icon    = meta.icon;
-
+            const meta = TYPE_META[sub.type] || TYPE_META.update;
+            const Icon = meta.icon;
             return (
               <div key={sub._id}
                    className="p-5 rounded-xl border transition-all hover:border-[var(--admin-primary)]"
@@ -163,9 +167,7 @@ export default function SubmissionsPage() {
                         {meta.label}
                       </span>
                       {sub.taskId && (
-                        <span className="text-sm font-semibold text-white">
-                          {sub.taskId.title}
-                        </span>
+                        <span className="text-sm font-semibold text-white">{sub.taskId.title}</span>
                       )}
                     </div>
                     <div className="flex items-center gap-4 text-xs flex-wrap"
@@ -199,27 +201,27 @@ export default function SubmissionsPage() {
                       {sub.attachments.map((file, idx) => (
                         <div key={idx}
                              className="flex items-center gap-3 p-3 rounded-lg border"
-                             style={{ background: 'var(--bg-surface)', borderColor: 'var(--border)' }}>
-                          {file.resourceType === 'image' ? (
-                            <img src={file.url} alt={file.originalName}
-                                 className="w-12 h-12 rounded object-cover shrink-0" />
-                          ) : (
-                            <div className="w-12 h-12 rounded flex items-center justify-center shrink-0"
-                                 style={{ background: 'rgba(245,158,11,0.1)' }}>
-                              <FiFileText className="w-6 h-6" style={{ color: 'var(--admin-primary)' }} />
-                            </div>
-                          )}
+                             style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'var(--border)' }}>
+                          {/* File icon */}
+                          <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
+                               style={{ background: isImageMime(file.fileType) ? 'rgba(99,102,241,0.15)' : 'rgba(249,115,22,0.12)' }}>
+                            {isImageMime(file.fileType)
+                              ? <FiImage    className="w-5 h-5" style={{ color: '#818cf8' }} />
+                              : <FiFileText className="w-5 h-5" style={{ color: 'var(--admin-primary)' }} />
+                            }
+                          </div>
                           <div className="flex-1 min-w-0">
                             <div className="text-sm font-semibold text-white truncate">
                               {file.originalName}
                             </div>
                             <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>
-                              {(file.fileSize / 1024).toFixed(1)} KB
+                              {file.fileSize ? `${(file.fileSize / 1024).toFixed(1)} KB` : ''}
                             </div>
                           </div>
+                          {/* Download button */}
                           <button
-                            onClick={() => handleDownload(file.url, file.originalName)}
-                            className="p-1.5 rounded-lg transition-all hover:bg-white/10 shrink-0"
+                            onClick={() => downloadFile(file.filename, file.originalName)}
+                            className="p-2 rounded-lg transition-all hover:bg-white/10 shrink-0"
                             style={{ color: 'var(--admin-primary)' }}
                             title="Download"
                           >

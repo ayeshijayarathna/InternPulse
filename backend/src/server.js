@@ -43,7 +43,7 @@ io.on('connection', (socket) => {
   });
 });
 
-// Core middleware
+// Core middleware 
 app.use(cors({ origin: process.env.FRONTEND_URL || 'http://localhost:5173' }));
 app.use(express.json());
 
@@ -55,12 +55,34 @@ app.use('/api/updates',       require('./routes/updates'));
 app.use('/api/super-admin',   require('./routes/superAdmin'));
 app.use('/api/notifications', require('./routes/notifications'));
 
-// Health check 
+// Protected file download
+// GET /api/files/:filename  — JWT required, streams file to client
+const pathModule  = require('path');
+const fs          = require('fs');
+const { protect } = require('./middleware/auth');
+
+app.get('/api/files/:filename', protect, (req, res) => {
+  const uploadsDir = pathModule.join(__dirname, '../uploads/attachments');
+  const filePath   = pathModule.join(uploadsDir, req.params.filename);
+
+  // Prevent path traversal attacks
+  if (!filePath.startsWith(uploadsDir)) {
+    return res.status(400).json({ message: 'Invalid filename' });
+  }
+
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).json({ message: 'File not found' });
+  }
+
+  res.download(filePath);
+});
+
+//  Health check 
 app.get('/api/health', (req, res) =>
   res.json({ status: 'OK', timestamp: new Date().toISOString() })
 );
 
-// Global error handler 
+//  Global error handler 
 app.use((err, req, res, next) => {
   if (err.code === 'LIMIT_FILE_SIZE')
     return res.status(400).json({ message: 'File too large. Max: images 5 MB, documents 20 MB' });
@@ -69,7 +91,7 @@ app.use((err, req, res, next) => {
   res.status(500).json({ message: 'Internal server error' });
 });
 
-//  Connect DB → Start server
+//  Connect DB → Start server 
 connectDB().then(() => {
   // Start cron after DB is ready
   const { startDeadlineReminderCron } = require('./cron/deadlineReminder');

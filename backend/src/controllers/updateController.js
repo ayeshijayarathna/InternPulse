@@ -1,16 +1,16 @@
+const path       = require('path');
 const TaskUpdate = require('../models/TaskUpdate');
 const Task       = require('../models/Task');
 const User       = require('../models/User');
-const { uploadBufferToCloudinary, isImage } = require('../middleware/upload');
 const { createNotification } = require('../services/notificationService');
 
-// POST /api/updates
+// POST /api/updates 
 // Intern submits update / self_task (locked after submit)
 const createUpdate = async (req, res) => {
   try {
     const { taskId, type, content } = req.body;
 
-    if (!content) {
+    if (!content?.trim()) {
       return res.status(400).json({ message: 'Content is required' });
     }
 
@@ -22,32 +22,20 @@ const createUpdate = async (req, res) => {
       }
     }
 
-    // Handle file attachments
-    const attachments = [];
-    if (req.files && req.files.length > 0) {
-      for (const file of req.files) {
-        const resourceType = isImage(file.mimetype) ? 'image' : 'raw';
-        const result = await uploadBufferToCloudinary(file.buffer, {
-          folder:        'internpulse/attachments',
-          resource_type: resourceType,
-          public_id:     `${Date.now()}-${file.originalname.replace(/\s+/g, '_')}`,
-        });
-        attachments.push({
-          url:          result.secure_url,
-          publicId:     result.public_id,
-          originalName: file.originalname,
-          fileType:     file.mimetype,
-          fileSize:     file.size,
-          resourceType,
-        });
-      }
-    }
+    // Build attachments array from disk-saved files 
+    const attachments = (req.files || []).map(file => ({
+      filename:     file.filename,                    // saved name on disk e.g. 1718000000-123456.pdf
+      originalName: file.originalname,
+      fileType:     file.mimetype,
+      fileSize:     file.size,
+      path:         file.path,                        // absolute path (server-side only)
+    }));
 
     const update = await TaskUpdate.create({
       taskId:    taskId || null,
       createdBy: req.user._id,
       type:      type   || 'update',
-      content,
+      content:   content.trim(),
       locked:    true,
       attachments,
     });
@@ -55,8 +43,7 @@ const createUpdate = async (req, res) => {
     await update.populate('taskId',    'title');
     await update.populate('createdBy', 'name email');
 
-    // Notify supervisor
-    // Find the supervisor who created this intern
+    //Notify supervisor
     const internUser = await User.findById(req.user._id).select('createdBy name');
     if (internUser?.createdBy) {
       const io = req.app.locals.io;
@@ -72,15 +59,28 @@ const createUpdate = async (req, res) => {
 
     res.status(201).json(update);
   } catch (err) {
-    res.status(500).json({ message: 'Server error', error: err.message });
+    console.error('createUpdate error:', err);
+    res.status(500).json({ message: err.message || 'Server error' });
   }
 };
 
-// GET /api/updates 
-// Supervisor: sees submissions from their own interns ONLY
+// GET /api/updates/my
+// Intern: own submissions only (read-only)
+const getMyUpdates = async (req, res) => {
+  try {
+    const updates = await TaskUpdate.find({ createdBy: req.user._id })
+      .populate('taskId', 'title')
+      .sort({ createdAt: -1 });
+    res.json(updates);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// GET /api/updates
+// Supervisor: sees submissions from own interns ONLY
 const getAllUpdates = async (req, res) => {
   try {
-    // Get IDs of interns belonging to this supervisor
     const myInterns = await User.find({
       role:      'intern',
       createdBy: req.user._id,
@@ -95,31 +95,15 @@ const getAllUpdates = async (req, res) => {
 
     res.json(updates);
   } catch (err) {
-    res.status(500).json({ message: 'Server error', error: err.message });
+    res.status(500).json({ message: 'Server error' });
   }
 };
 
-// GET /api/updates/my 
-// Intern: own submissions only (read-only)
-const getMyUpdates = async (req, res) => {
-  try {
-    const updates = await TaskUpdate.find({ createdBy: req.user._id })
-      .populate('taskId', 'title')
-      .sort({ createdAt: -1 });
-
-    res.json(updates);
-  } catch (err) {
-    res.status(500).json({ message: 'Server error', error: err.message });
-  }
-};
-
-// Edit / Delete blocked 
-const blockEdit = (req, res) => {
+//  Edit / Delete blocked
+const blockEdit   = (req, res) =>
   res.status(403).json({ message: 'Submissions are locked and cannot be edited' });
-};
 
-const blockDelete = (req, res) => {
+const blockDelete = (req, res) =>
   res.status(403).json({ message: 'Submissions are locked and cannot be deleted' });
-};
 
 module.exports = { createUpdate, getAllUpdates, getMyUpdates, blockEdit, blockDelete };

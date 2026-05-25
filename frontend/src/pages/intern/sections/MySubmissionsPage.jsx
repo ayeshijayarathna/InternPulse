@@ -1,13 +1,39 @@
 import { useEffect, useState } from 'react';
 import {
-  FiFileText, FiRefreshCw, FiPaperclip, FiImage, FiFile,
-  FiCheckCircle, FiZap, FiLock
+  FiFileText, FiRefreshCw, FiPaperclip, FiImage,
+  FiCheckCircle, FiZap, FiLock, FiDownload
 } from 'react-icons/fi';
 import axiosInstance from '../../../api/axiosInstance';
 
 const TYPE_META = {
   update:    { label: 'Update',    icon: FiCheckCircle, color: 'var(--success)',       bg: 'rgba(34,197,94,0.1)'  },
   self_task: { label: 'Self Task', icon: FiZap,         color: 'var(--intern-accent)', bg: 'rgba(124,58,237,0.1)' },
+};
+
+const isImageMime = (mime) => mime?.startsWith('image/');
+
+// Download via protected API endpoint
+const downloadFile = async (filename, originalName) => {
+  try {
+    const token = localStorage.getItem('token');
+    const res   = await fetch(
+      `${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/files/${filename}`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    if (!res.ok) throw new Error('Download failed');
+    const blob    = await res.blob();
+    const blobUrl = window.URL.createObjectURL(blob);
+    const a       = document.createElement('a');
+    a.href        = blobUrl;
+    a.download    = originalName || filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(blobUrl);
+  } catch (err) {
+    console.error('Download error:', err);
+    alert('File download failed.');
+  }
 };
 
 export default function MySubmissionsPage() {
@@ -20,7 +46,6 @@ export default function MySubmissionsPage() {
     setLoading(true);
     try {
       const res = await axiosInstance.get('/updates/my');
-      // Exclude blockers from intern view
       setSubmissions(res.data.filter(s => s.type !== 'blocker'));
     } catch (err) {
       console.error(err);
@@ -41,10 +66,9 @@ export default function MySubmissionsPage() {
     { id: 'self_task', label: 'Self Tasks', count: submissions.filter(s => s.type === 'self_task').length },
   ];
 
-  const isImageMime = (mime) => mime?.startsWith('image/');
-
   return (
     <div className="space-y-6">
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -55,11 +79,9 @@ export default function MySubmissionsPage() {
             {submissions.length} total · read-only after submission
           </p>
         </div>
-        <button
-          onClick={fetchSubmissions}
-          className="p-2 rounded-xl border transition-all hover:bg-white/5"
-          style={{ borderColor: 'var(--border)' }}
-        >
+        <button onClick={fetchSubmissions}
+                className="p-2 rounded-xl border transition-all hover:bg-white/5"
+                style={{ borderColor: 'var(--border)' }}>
           <FiRefreshCw className="w-4 h-4" style={{ color: 'var(--text-secondary)' }} />
         </button>
       </div>
@@ -67,20 +89,16 @@ export default function MySubmissionsPage() {
       {/* Filter tabs */}
       <div className="flex gap-2 flex-wrap">
         {filterTabs.map(tab => (
-          <button
-            key={tab.id}
-            onClick={() => setFilter(tab.id)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
-            style={{
-              background: filter === tab.id
-                ? 'linear-gradient(135deg, var(--intern-primary), var(--intern-secondary))'
-                : 'var(--bg-card)',
-              color:  filter === tab.id ? '#fff' : 'var(--text-secondary)',
-              border: `1px solid ${filter === tab.id ? 'transparent' : 'var(--border)'}`,
-            }}
-          >
-            {tab.label}
-            <span className="opacity-70">({tab.count})</span>
+          <button key={tab.id} onClick={() => setFilter(tab.id)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+                  style={{
+                    background: filter === tab.id
+                      ? 'linear-gradient(135deg,var(--intern-primary),var(--intern-secondary))'
+                      : 'var(--bg-card)',
+                    color:  filter === tab.id ? '#fff' : 'var(--text-secondary)',
+                    border: `1px solid ${filter === tab.id ? 'transparent' : 'var(--border)'}`,
+                  }}>
+            {tab.label} <span className="opacity-70">({tab.count})</span>
           </button>
         ))}
       </div>
@@ -105,20 +123,16 @@ export default function MySubmissionsPage() {
             const isExpanded = expanded === sub._id;
 
             return (
-              <div
-                key={sub._id}
-                className="rounded-2xl border overflow-hidden transition-all"
-                style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}
-              >
+              <div key={sub._id}
+                   className="rounded-2xl border overflow-hidden transition-all"
+                   style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
+
                 {/* Card Header */}
-                <button
-                  className="w-full flex items-center gap-4 p-5 text-left"
-                  onClick={() => setExpanded(isExpanded ? null : sub._id)}
-                >
+                <button className="w-full flex items-center gap-4 p-5 text-left"
+                        onClick={() => setExpanded(isExpanded ? null : sub._id)}>
                   <div className="p-2 rounded-lg shrink-0" style={{ background: meta.bg }}>
                     <Icon className="w-4 h-4" style={{ color: meta.color }} />
                   </div>
-
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-xs font-bold px-2 py-0.5 rounded"
@@ -134,7 +148,6 @@ export default function MySubmissionsPage() {
                     </div>
                     <p className="text-sm text-white mt-1 line-clamp-1">{sub.content}</p>
                   </div>
-
                   <div className="shrink-0 text-right">
                     <div className="text-xs" style={{ color: 'var(--text-muted)' }}>
                       {new Date(sub.createdAt).toLocaleDateString()}
@@ -152,15 +165,13 @@ export default function MySubmissionsPage() {
                   </div>
                 </button>
 
-                {/* Expanded content */}
+                {/* Expanded */}
                 {isExpanded && (
                   <div className="px-5 pb-5 border-t pt-4 space-y-4"
                        style={{ borderColor: 'var(--border)' }}>
                     <div>
                       <div className="text-xs font-semibold uppercase tracking-wider mb-2"
-                           style={{ color: 'var(--text-secondary)' }}>
-                        Content
-                      </div>
+                           style={{ color: 'var(--text-secondary)' }}>Content</div>
                       <p className="text-sm text-white leading-relaxed whitespace-pre-wrap">
                         {sub.content}
                       </p>
@@ -169,37 +180,42 @@ export default function MySubmissionsPage() {
                     {sub.attachments?.length > 0 && (
                       <div>
                         <div className="text-xs font-semibold uppercase tracking-wider mb-2"
-                             style={{ color: 'var(--text-secondary)' }}>
-                          Attachments
-                        </div>
+                             style={{ color: 'var(--text-secondary)' }}>Attachments</div>
                         <div className="space-y-2">
                           {sub.attachments.map((att, idx) => (
-                            <a
-                              key={idx}
-                              href={att.url}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="flex items-center gap-3 px-3 py-2 rounded-lg border transition-all hover:bg-white/5"
-                              style={{ borderColor: 'var(--border)' }}
-                            >
-                              {isImageMime(att.fileType)
-                                ? <FiImage className="w-4 h-4 shrink-0" style={{ color: 'var(--intern-accent)' }} />
-                                : <FiFile  className="w-4 h-4 shrink-0" style={{ color: 'var(--text-secondary)' }} />
-                              }
+                            <div key={idx}
+                                 className="flex items-center gap-3 px-3 py-2 rounded-lg border"
+                                 style={{ borderColor: 'var(--border)', background: 'rgba(255,255,255,0.03)' }}>
+                              {/* Icon */}
+                              <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
+                                   style={{ background: isImageMime(att.fileType) ? 'rgba(99,102,241,0.15)' : 'rgba(249,115,22,0.12)' }}>
+                                {isImageMime(att.fileType)
+                                  ? <FiImage    className="w-4 h-4" style={{ color: '#818cf8' }} />
+                                  : <FiFileText className="w-4 h-4" style={{ color: 'var(--intern-primary)' }} />
+                                }
+                              </div>
                               <span className="flex-1 text-xs truncate text-white">
                                 {att.originalName}
                               </span>
                               <span className="text-xs shrink-0" style={{ color: 'var(--text-muted)' }}>
                                 {att.fileSize ? `${(att.fileSize / 1024).toFixed(1)} KB` : ''}
                               </span>
-                            </a>
+                              {/* Download */}
+                              <button
+                                onClick={() => downloadFile(att.filename, att.originalName)}
+                                className="p-1.5 rounded-lg hover:bg-white/10 transition-all shrink-0"
+                                style={{ color: 'var(--intern-primary)' }}
+                                title="Download"
+                              >
+                                <FiDownload className="w-4 h-4" />
+                              </button>
+                            </div>
                           ))}
                         </div>
                       </div>
                     )}
 
-                    <div className="flex items-center gap-2 text-xs"
-                         style={{ color: 'var(--text-muted)' }}>
+                    <div className="flex items-center gap-2 text-xs" style={{ color: 'var(--text-muted)' }}>
                       <FiLock className="w-3 h-3" />
                       Submission locked — cannot be edited or deleted
                     </div>
