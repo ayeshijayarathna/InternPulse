@@ -1,11 +1,16 @@
-const User        = require('../models/User');
-const cloudinary  = require('../config/cloudinary');
+const path      = require('path');
+const fs        = require('fs');
+const User      = require('../models/User');
+const cloudinary = require('../config/cloudinary');
 const { uploadBufferToCloudinary, isImage } = require('../middleware/upload');
 const { sendWelcomeMail }    = require('../services/emailService');
 const { createNotification } = require('../services/notificationService');
 
-// GET /api/users/interns
-// Supervisor: own interns only (createdBy = req.user._id)
+// CV uploads folder
+const CV_DIR = path.join(__dirname, '../../uploads/cvs');
+if (!fs.existsSync(CV_DIR)) fs.mkdirSync(CV_DIR, { recursive: true });
+
+//GET /api/users/interns
 const getInterns = async (req, res) => {
   try {
     const interns = await User.find({
@@ -14,7 +19,6 @@ const getInterns = async (req, res) => {
     })
       .select('-passwordHash')
       .sort({ createdAt: -1 });
-
     res.json(interns);
   } catch (err) {
     console.error('getInterns error:', err);
@@ -22,10 +26,10 @@ const getInterns = async (req, res) => {
   }
 };
 
-// POST /api/users/intern
+// POST /api/users/intern 
 const createIntern = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, internshipStart, internshipEnd } = req.body;
 
     if (!name || !email || !password)
       return res.status(400).json({ message: 'Name, email and password are required' });
@@ -35,28 +39,28 @@ const createIntern = async (req, res) => {
 
     let avatar;
     if (req.file) {
-      const resourceType = isImage(req.file.mimetype) ? 'image' : 'raw';
       const result = await uploadBufferToCloudinary(req.file.buffer, {
         folder:        'internpulse/avatars',
-        resource_type: resourceType,
+        resource_type: 'image',
       });
       avatar = { url: result.secure_url, publicId: result.public_id };
     }
 
-    // pre-save hook hashes passwordHash automatically
     const intern = await User.create({
       name,
       email,
-      passwordHash: password,
-      role:         'intern',
-      createdBy:    req.user._id,
+      passwordHash:    password,
+      role:            'intern',
+      createdBy:       req.user._id,
+      internshipStart: internshipStart || null,
+      internshipEnd:   internshipEnd   || null,
       ...(avatar && { avatar }),
     });
 
     const safe = intern.toObject();
     delete safe.passwordHash;
 
-    // Send welcome email with credentials 
+    // Welcome email
     sendWelcomeMail({ name, email, password }).catch(err =>
       console.error('Welcome email error:', err)
     );
@@ -77,7 +81,7 @@ const createIntern = async (req, res) => {
   }
 };
 
-// PATCH /api/users/intern/:id 
+// PATCH /api/users/intern/:id
 const updateIntern = async (req, res) => {
   try {
     const intern = await User.findOne({
@@ -87,17 +91,19 @@ const updateIntern = async (req, res) => {
     });
     if (!intern) return res.status(404).json({ message: 'Intern not found' });
 
-    const { name, email, password } = req.body;
+    const { name, email, password, internshipStart, internshipEnd } = req.body;
     if (name)  intern.name  = name;
     if (email) intern.email = email;
-    if (password && password.trim()) intern.passwordHash = password; // hook re-hashes
+    if (password && password.trim()) intern.passwordHash = password;
+    if (internshipStart !== undefined) intern.internshipStart = internshipStart || null;
+    if (internshipEnd   !== undefined) intern.internshipEnd   = internshipEnd   || null;
 
     if (req.file) {
       if (intern.avatar?.publicId)
         await cloudinary.uploader.destroy(intern.avatar.publicId).catch(() => {});
-      const result  = await uploadBufferToCloudinary(req.file.buffer, {
-        folder: 'internpulse/avatars',
-        resource_type: isImage(req.file.mimetype) ? 'image' : 'raw',
+      const result = await uploadBufferToCloudinary(req.file.buffer, {
+        folder:        'internpulse/avatars',
+        resource_type: 'image',
       });
       intern.avatar = { url: result.secure_url, publicId: result.public_id };
     }
@@ -112,8 +118,7 @@ const updateIntern = async (req, res) => {
   }
 };
 
-// PATCH /api/users/intern/:id/toggle (activate / deactivate)
-// Keep original name: toggleInternStatus (used in original routes.js)
+// PATCH /api/users/intern/:id/toggle 
 const toggleInternStatus = async (req, res) => {
   try {
     const intern = await User.findOne({
@@ -125,17 +130,15 @@ const toggleInternStatus = async (req, res) => {
 
     intern.isActive = !intern.isActive;
     await intern.save();
-
     const safe = intern.toObject();
     delete safe.passwordHash;
     res.json(safe);
   } catch (err) {
-    console.error('toggleInternStatus error:', err);
     res.status(500).json({ message: 'Server error' });
   }
 };
 
-//  DELETE /api/users/intern/:id
+// DELETE /api/users/intern/:id 
 const deleteIntern = async (req, res) => {
   try {
     const intern = await User.findOne({
@@ -148,6 +151,12 @@ const deleteIntern = async (req, res) => {
     if (intern.avatar?.publicId)
       await cloudinary.uploader.destroy(intern.avatar.publicId).catch(() => {});
 
+    // Delete CV from disk if exists
+    if (intern.cv?.filename) {
+      const cvPath = path.join(CV_DIR, intern.cv.filename);
+      if (fs.existsSync(cvPath)) fs.unlinkSync(cvPath);
+    }
+
     await intern.deleteOne();
     res.json({ message: 'Intern deleted successfully' });
   } catch (err) {
@@ -156,7 +165,7 @@ const deleteIntern = async (req, res) => {
   }
 };
 
-// PATCH /api/users/avatar (original — keep)
+// PATCH /api/users/avatar
 const updateAvatar = async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
@@ -166,12 +175,11 @@ const updateAvatar = async (req, res) => {
       await cloudinary.uploader.destroy(user.avatar.publicId).catch(() => {});
 
     const result = await uploadBufferToCloudinary(req.file.buffer, {
-      folder: 'internpulse/avatars',
+      folder:        'internpulse/avatars',
       resource_type: 'image',
     });
     user.avatar = { url: result.secure_url, publicId: result.public_id };
     await user.save();
-
     const safe = user.toObject();
     delete safe.passwordHash;
     res.json(safe);
@@ -180,12 +188,111 @@ const updateAvatar = async (req, res) => {
   }
 };
 
-//Original export kept 
+//PATCH /api/users/profile
+// Intern: update own university, hometown + avatar
+const updateProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    const { university, hometown } = req.body;
+    if (university !== undefined) user.university = university || null;
+    if (hometown   !== undefined) user.hometown   = hometown   || null;
+
+    if (req.file && isImage(req.file.mimetype)) {
+      if (user.avatar?.publicId)
+        await cloudinary.uploader.destroy(user.avatar.publicId).catch(() => {});
+      const result = await uploadBufferToCloudinary(req.file.buffer, {
+        folder:        'internpulse/avatars',
+        resource_type: 'image',
+      });
+      user.avatar = { url: result.secure_url, publicId: result.public_id };
+    }
+
+    await user.save();
+    const safe = user.toObject();
+    delete safe.passwordHash;
+    res.json(safe);
+  } catch (err) {
+    console.error('updateProfile error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+//POST /api/users/cv
+// Intern: upload own CV to local disk
+const uploadCV = async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
+
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    // Delete old CV if exists
+    if (user.cv?.filename) {
+      const old = path.join(CV_DIR, user.cv.filename);
+      if (fs.existsSync(old)) fs.unlinkSync(old);
+    }
+
+    user.cv = {
+      filename:     req.file.filename,
+      originalName: req.file.originalname,
+      fileSize:     req.file.size,
+      uploadedAt:   new Date(),
+    };
+
+    await user.save();
+    const safe = user.toObject();
+    delete safe.passwordHash;
+    res.json(safe);
+  } catch (err) {
+    console.error('uploadCV error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+//GET /api/users/intern/:id/cv
+// Supervisor: download intern's CV
+const downloadInternCV = async (req, res) => {
+  try {
+    const intern = await User.findOne({
+      _id:       req.params.id,
+      createdBy: req.user._id,
+      role:      'intern',
+    });
+    if (!intern)             return res.status(404).json({ message: 'Intern not found' });
+    if (!intern.cv?.filename) return res.status(404).json({ message: 'No CV uploaded' });
+
+    const cvPath = path.join(CV_DIR, intern.cv.filename);
+    if (!fs.existsSync(cvPath)) return res.status(404).json({ message: 'CV file not found on server' });
+
+    res.download(cvPath, intern.cv.originalName || intern.cv.filename);
+  } catch (err) {
+    console.error('downloadInternCV error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// GET /api/users/me
+const getMe = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select('-passwordHash');
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 module.exports = {
   getInterns,
   createIntern,
   updateIntern,
-  toggleInternStatus,   
+  toggleInternStatus,
   deleteIntern,
   updateAvatar,
+  updateProfile,
+  uploadCV,
+  downloadInternCV,
+  getMe,
 };
