@@ -38,7 +38,7 @@ const userSchema = new mongoose.Schema(
       default: null,
     },
 
-    //  Intern profile fields (editable by intern)
+    //Intern profile fields (editable by intern)
     university: { type: String, default: null, trim: true },
     hometown:   { type: String, default: null, trim: true },
     cv: {
@@ -48,7 +48,7 @@ const userSchema = new mongoose.Schema(
       uploadedAt:   { type: Date,   default: null },
     },
 
-    //  Internship dates (set by supervisor, read-only for intern) 
+    // Internship dates (set by supervisor, read-only for intern) 
     internshipStart: { type: Date, default: null },
     internshipEnd:   { type: Date, default: null },
   },
