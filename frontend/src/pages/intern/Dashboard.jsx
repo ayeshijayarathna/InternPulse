@@ -11,7 +11,7 @@ import MyTasksPage           from './sections/MyTasksPage';
 import MySubmissionsPage     from './sections/MySubmissionsPage';
 import SubmitUpdatePage      from './sections/SubmitUpdatePage';
 import OverviewPage          from './sections/OverviewPage';
-import NotificationsPage     from './sections/NotificationsPage';
+import NotificationsPage     from './sections/intern_NotificationsPage';
 import EditProfilePage       from './sections/EditProfilePage';
 
 export default function InternDashboard() {
