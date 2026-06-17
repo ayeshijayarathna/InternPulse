@@ -21,7 +21,6 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type:    String,
-      // ← Added super_admin here
       enum:    ['super_admin', 'supervisor', 'intern'],
       default: 'intern',
     },
@@ -33,12 +32,25 @@ const userSchema = new mongoose.Schema(
       url:      { type: String, default: null },
       publicId: { type: String, default: null },
     },
-    // ← Added: which supervisor created this intern (or which super_admin created supervisor)
     createdBy: {
       type:    mongoose.Schema.Types.ObjectId,
       ref:     'User',
       default: null,
     },
+
+    //  Intern profile fields (editable by intern)
+    university: { type: String, default: null, trim: true },
+    hometown:   { type: String, default: null, trim: true },
+    cv: {
+      filename:     { type: String, default: null }, // saved filename on disk
+      originalName: { type: String, default: null },
+      fileSize:     { type: Number, default: null },
+      uploadedAt:   { type: Date,   default: null },
+    },
+
+    //  Internship dates (set by supervisor, read-only for intern) 
+    internshipStart: { type: Date, default: null },
+    internshipEnd:   { type: Date, default: null },
   },
   { timestamps: true }
 );
