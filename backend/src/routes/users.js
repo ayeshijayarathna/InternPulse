@@ -11,6 +11,7 @@ const {
   toggleInternStatus,
   deleteIntern,
   updateAvatar,
+  deleteAvatar,
   updateProfile,
   uploadCV,
   downloadInternCV,
@@ -20,7 +21,7 @@ const {
 const { protect, supervisorOnly, internOnly } = require('../middleware/auth');
 const { uploadAny, uploadImage }              = require('../middleware/upload');
 
-// CV disk storage (PDF/Word, 10MB) 
+//CV disk storage 
 const CV_DIR = path.join(__dirname, '../../uploads/cvs');
 if (!fs.existsSync(CV_DIR)) fs.mkdirSync(CV_DIR, { recursive: true });
 
@@ -48,18 +49,16 @@ const uploadCV_multer = multer({
   },
 });
 
-//  Own profile 
+// Own profile 
 router.get('/me', protect, getMe);
 
-// Intern: update own profile (university, hometown, avatar)
 router.patch(
   '/profile',
   protect, internOnly,
-  uploadImage.single('avatar'),   // memory storage → Cloudinary
+  uploadImage.single('avatar'),
   updateProfile
 );
 
-// Intern: upload own CV
 router.post(
   '/cv',
   protect, internOnly,
@@ -67,32 +66,16 @@ router.post(
   uploadCV
 );
 
-// Any user: update own avatar → Cloudinary (uploadImage = memory storage)
-router.patch('/avatar', protect, uploadImage.single('avatar'), updateAvatar);
+// Avatar — upload & delete
+router.patch('/avatar',        protect, uploadImage.single('avatar'), updateAvatar);
+router.delete('/avatar',       protect, deleteAvatar);   
 
-//Supervisor: intern CRUD 
-router.get('/interns', protect, supervisorOnly, getInterns);
-
-router.post(
-  '/intern',
-  protect, supervisorOnly,
-  uploadImage.single('avatar'),   // memory storage → Cloudinary
-  createIntern
-);
-
-// NOTE: specific routes BEFORE /:id param routes
-router.patch('/intern/:id/toggle', protect, supervisorOnly, toggleInternStatus);
-
-// Supervisor: download intern CV
-router.get('/intern/:id/cv', protect, supervisorOnly, downloadInternCV);
-
-router.patch(
-  '/intern/:id',
-  protect, supervisorOnly,
-  uploadImage.single('avatar'),   // memory storage → Cloudinary
-  updateIntern
-);
-
-router.delete('/intern/:id', protect, supervisorOnly, deleteIntern);
+// Supervisor: intern CRUD 
+router.get('/interns',                  protect, supervisorOnly, getInterns);
+router.post('/intern',                  protect, supervisorOnly, uploadImage.single('avatar'), createIntern);
+router.patch('/intern/:id/toggle',      protect, supervisorOnly, toggleInternStatus);
+router.get('/intern/:id/cv',            protect, supervisorOnly, downloadInternCV);
+router.patch('/intern/:id',             protect, supervisorOnly, uploadImage.single('avatar'), updateIntern);
+router.delete('/intern/:id',            protect, supervisorOnly, deleteIntern);
 
 module.exports = router;
