@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { FiCamera, FiTrash2 } from 'react-icons/fi';
-import axiosInstance from '../api/axiosInstance';
+import axiosInstance from '../../api/axiosInstance';
 
 export default function AvatarUpload({
   user,
@@ -19,7 +19,7 @@ export default function AvatarUpload({
 
   const hasAvatar = !!user?.avatar?.url;
 
-  //Upload 
+  //Upload
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -40,7 +40,7 @@ export default function AvatarUpload({
     }
   };
 
-  // Delete
+  // Delete 
   const handleDelete = async () => {
     if (!window.confirm('Remove profile picture?')) return;
     setDeleting(true);
