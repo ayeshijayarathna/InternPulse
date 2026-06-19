@@ -4,7 +4,8 @@ import {
   FiUsers, FiUserPlus, FiEdit2, FiTrash2, FiMail,
   FiCalendar, FiChevronDown, FiChevronUp, FiX,
   FiUserCheck, FiUserX, FiRefreshCw, FiSearch, FiDownload,
-  FiEye, FiEyeOff, FiCopy, FiCheck, FiShield
+  FiEye, FiEyeOff, FiCopy, FiCheck, FiShield,
+  FiBook, FiMapPin, FiFileText
 } from 'react-icons/fi';
 import axiosInstance from '../../../api/axiosInstance';
 
@@ -46,7 +47,7 @@ function downloadInternsPDF(supervisor, interns) {
   if (win) { win.onload = () => { win.print(); URL.revokeObjectURL(url); }; }
 }
 
-// ── Credentials Modal ─────────────────────────────────────────────────────────
+//Credentials Modal
 function CredentialsModal({ credentials, onClose }) {
   const [copiedField, setCopiedField] = useState(null);
   const [showPass,    setShowPass]    = useState(false);
@@ -61,56 +62,41 @@ function CredentialsModal({ credentials, onClose }) {
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
       <div className="w-full max-w-md rounded-2xl p-6 space-y-5"
            style={{ background: 'var(--bg-card)', border: '1px solid rgba(34,197,94,0.25)' }}>
-
-        {/* Header */}
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center"
-               style={{ background: 'rgba(34,197,94,0.12)' }}>
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(34,197,94,0.12)' }}>
             <FiShield className="w-5 h-5" style={{ color: '#22c55e' }} />
           </div>
           <div className="flex-1">
-            <h3 className="font-bold text-white" style={{ fontFamily: 'var(--font-display)' }}>
-              Supervisor Created
-            </h3>
-            <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
-              Save these credentials — password won't be shown again
-            </p>
+            <h3 className="font-bold text-white" style={{ fontFamily: 'var(--font-display)' }}>Supervisor Created</h3>
+            <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>Save these credentials — password won't be shown again</p>
           </div>
-          <button onClick={onClose} className="p-1 rounded-lg hover:bg-white/5"
-                  style={{ color: 'var(--text-secondary)' }}>
+          <button onClick={onClose} className="p-1 rounded-lg hover:bg-white/5" style={{ color: 'var(--text-secondary)' }}>
             <FiX className="w-5 h-5" />
           </button>
         </div>
-
-        {/* Warning */}
         <div className="p-3 rounded-xl text-xs"
              style={{ background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)', color: '#f59e0b' }}>
           ⚠️ Copy and share these credentials securely. This dialog cannot be reopened.
         </div>
-
-        {/* Credentials */}
         <div className="space-y-3">
-          {/* Name */}
           <div className="p-3 rounded-xl" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
             <div className="text-xs font-semibold mb-1" style={{ color: 'var(--text-muted)' }}>FULL NAME</div>
             <div className="text-sm text-white font-medium">{credentials.name}</div>
           </div>
-
-          {/* Email */}
-          <div className="p-3 rounded-xl flex items-center justify-between gap-3"
-               style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
-            <div className="min-w-0">
-              <div className="text-xs font-semibold mb-1" style={{ color: 'var(--text-muted)' }}>EMAIL</div>
-              <div className="text-sm text-white font-medium truncate">{credentials.email}</div>
+          {[{ label: 'EMAIL', value: credentials.email, field: 'email' }].map(f => (
+            <div key={f.field} className="p-3 rounded-xl flex items-center justify-between gap-3"
+                 style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
+              <div className="min-w-0">
+                <div className="text-xs font-semibold mb-1" style={{ color: 'var(--text-muted)' }}>{f.label}</div>
+                <div className="text-sm text-white font-medium truncate">{f.value}</div>
+              </div>
+              <button onClick={() => copyToClipboard(f.value, f.field)}
+                      className="shrink-0 p-1.5 rounded-lg hover:bg-white/5"
+                      style={{ color: copiedField === f.field ? '#22c55e' : 'var(--text-secondary)' }}>
+                {copiedField === f.field ? <FiCheck className="w-4 h-4" /> : <FiCopy className="w-4 h-4" />}
+              </button>
             </div>
-            <button onClick={() => copyToClipboard(credentials.email, 'email')}
-                    className="shrink-0 p-1.5 rounded-lg transition-all hover:bg-white/5"
-                    style={{ color: copiedField === 'email' ? '#22c55e' : 'var(--text-secondary)' }}>
-              {copiedField === 'email' ? <FiCheck className="w-4 h-4" /> : <FiCopy className="w-4 h-4" />}
-            </button>
-          </div>
-
-          {/* Password */}
+          ))}
           <div className="p-3 rounded-xl flex items-center justify-between gap-3"
                style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
             <div className="min-w-0 flex-1">
@@ -119,23 +105,20 @@ function CredentialsModal({ credentials, onClose }) {
                 {showPass ? credentials.password : '•'.repeat(credentials.password.length)}
               </div>
             </div>
-            <div className="flex items-center gap-1 shrink-0">
-              <button onClick={() => setShowPass(p => !p)}
-                      className="p-1.5 rounded-lg transition-all hover:bg-white/5"
+            <div className="flex gap-1 shrink-0">
+              <button onClick={() => setShowPass(p => !p)} className="p-1.5 rounded-lg hover:bg-white/5"
                       style={{ color: 'var(--text-secondary)' }}>
                 {showPass ? <FiEyeOff className="w-4 h-4" /> : <FiEye className="w-4 h-4" />}
               </button>
               <button onClick={() => copyToClipboard(credentials.password, 'password')}
-                      className="p-1.5 rounded-lg transition-all hover:bg-white/5"
+                      className="p-1.5 rounded-lg hover:bg-white/5"
                       style={{ color: copiedField === 'password' ? '#22c55e' : 'var(--text-secondary)' }}>
                 {copiedField === 'password' ? <FiCheck className="w-4 h-4" /> : <FiCopy className="w-4 h-4" />}
               </button>
             </div>
           </div>
         </div>
-
-        <button onClick={onClose}
-                className="w-full py-2.5 rounded-xl font-semibold text-sm text-white"
+        <button onClick={onClose} className="w-full py-2.5 rounded-xl font-semibold text-sm text-white"
                 style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)' }}>
           Done — I've saved the credentials
         </button>
@@ -144,6 +127,69 @@ function CredentialsModal({ credentials, onClose }) {
   );
 }
 
+// Intern Profile Modal (super admin view) 
+function InternProfileModal({ intern, onClose }) {
+  const fmt = (d) => d ? new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : '—';
+  return (
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
+      <div className="w-full max-w-sm rounded-2xl overflow-hidden"
+           style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
+        <div className="p-4 border-b flex items-center justify-between"
+             style={{ borderColor: 'var(--border)', background: 'rgba(220,38,38,0.06)' }}>
+          <h3 className="font-bold text-white text-sm">Intern Profile</h3>
+          <button onClick={onClose} className="p-1 rounded-lg hover:bg-white/5" style={{ color: 'var(--text-secondary)' }}>
+            <FiX className="w-4 h-4" />
+          </button>
+        </div>
+        <div className="p-5 space-y-4">
+          <div className="flex items-center gap-3">
+            {intern.avatar?.url
+              ? <img src={intern.avatar.url} alt={intern.name} className="w-14 h-14 rounded-2xl object-cover border-2" style={{ borderColor: '#dc2626' }} />
+              : (
+                <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl font-bold text-white"
+                     style={{ background: 'linear-gradient(135deg,var(--intern-primary),var(--intern-secondary))' }}>
+                  {intern.name?.charAt(0).toUpperCase()}
+                </div>
+              )}
+            <div>
+              <h4 className="font-bold text-white">{intern.name}</h4>
+              <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
+                    style={{ background: intern.isActive ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)', color: intern.isActive ? '#22c55e' : '#ef4444' }}>
+                {intern.isActive ? 'Active' : 'Inactive'}
+              </span>
+            </div>
+          </div>
+          <div className="space-y-2">
+            {[
+              { icon: FiMail,     label: 'Email',      value: intern.email },
+              { icon: FiBook,     label: 'University', value: intern.university || '—' },
+              { icon: FiMapPin,   label: 'Hometown',   value: intern.hometown   || '—' },
+              { icon: FiCalendar, label: 'Start',      value: fmt(intern.internshipStart) },
+              { icon: FiCalendar, label: 'End',        value: fmt(intern.internshipEnd)   },
+            ].map(row => (
+              <div key={row.label} className="flex items-center gap-3 px-3 py-2 rounded-lg"
+                   style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)' }}>
+                <row.icon className="w-3.5 h-3.5 shrink-0" style={{ color: '#dc2626' }} />
+                <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>{row.label}:</span>
+                <span className="text-xs font-semibold text-white truncate">{row.value}</span>
+              </div>
+            ))}
+            {intern.cv?.filename && (
+              <div className="flex items-center gap-3 px-3 py-2 rounded-lg"
+                   style={{ background: 'rgba(34,197,94,0.05)', border: '1px solid rgba(34,197,94,0.2)' }}>
+                <FiFileText className="w-3.5 h-3.5 text-green-400 shrink-0" />
+                <span className="text-xs text-green-400 font-semibold">CV uploaded</span>
+                <span className="text-xs truncate" style={{ color: 'var(--text-secondary)' }}>{intern.cv.originalName}</span>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Main 
 export default function SupervisorsPage() {
   const [supervisors,    setSupervisors]    = useState([]);
   const [loading,        setLoading]        = useState(true);
@@ -152,6 +198,7 @@ export default function SupervisorsPage() {
   const [internMap,      setInternMap]      = useState({});
   const [internSearch,   setInternSearch]   = useState({});
   const [internsLoading, setInternsLoading] = useState(null);
+  const [viewIntern,     setViewIntern]     = useState(null);
 
   const [modal,         setModal]         = useState(null);
   const [editTarget,    setEditTarget]    = useState(null);
@@ -162,7 +209,7 @@ export default function SupervisorsPage() {
   const [deleteTarget,  setDeleteTarget]  = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(null);
-  const [credentials,   setCredentials]   = useState(null); // shown after create
+  const [credentials,   setCredentials]   = useState(null);
 
   useEffect(() => { fetchSupervisors(); }, []);
 
@@ -200,7 +247,6 @@ export default function SupervisorsPage() {
         await axiosInstance.post('/super-admin/supervisors', form);
         closeModal();
         fetchSupervisors();
-        // Show credentials modal
         setCredentials({ name: form.name, email: form.email, password: form.password });
       } else {
         const payload = { name: form.name, email: form.email };
@@ -241,46 +287,35 @@ export default function SupervisorsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 rounded-full border-2 animate-spin"
-             style={{ borderColor: '#dc2626', borderTopColor: 'transparent' }} />
+        <div className="w-8 h-8 rounded-full border-2 animate-spin" style={{ borderColor: '#dc2626', borderTopColor: 'transparent' }} />
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-
-      {/* Credentials modal */}
-      {credentials && (
-        <CredentialsModal credentials={credentials} onClose={() => setCredentials(null)} />
-      )}
+      {credentials && <CredentialsModal credentials={credentials} onClose={() => setCredentials(null)} />}
+      {viewIntern  && <InternProfileModal intern={viewIntern} onClose={() => setViewIntern(null)} />}
 
       {/* Header */}
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
-          <h2 className="text-2xl font-bold text-white" style={{ fontFamily: 'var(--font-display)' }}>
-            Supervisors
-          </h2>
-          <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
-            {supervisors.length} total supervisors
-          </p>
+          <h2 className="text-2xl font-bold text-white" style={{ fontFamily: 'var(--font-display)' }}>Supervisors</h2>
+          <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>{supervisors.length} total supervisors</p>
         </div>
         <div className="flex items-center gap-2">
           <div className="relative">
-            <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5"
-                      style={{ color: 'var(--text-muted)' }} />
+            <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5" style={{ color: 'var(--text-muted)' }} />
             <input type="text" placeholder="Search supervisor..." value={search}
                    onChange={e => setSearch(e.target.value)}
                    className="pl-8 pr-3 py-2 rounded-xl text-sm text-white placeholder-slate-600 outline-none w-48"
                    style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }} />
           </div>
-          <button onClick={fetchSupervisors}
-                  className="p-2 rounded-xl border transition-all hover:bg-white/5"
-                  style={{ borderColor: 'var(--border)' }}>
+          <button onClick={fetchSupervisors} className="p-2 rounded-xl border hover:bg-white/5" style={{ borderColor: 'var(--border)' }}>
             <FiRefreshCw className="w-4 h-4" style={{ color: 'var(--text-secondary)' }} />
           </button>
           <button onClick={openCreate}
-                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm text-white transition-all hover:opacity-90"
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm text-white hover:opacity-90"
                   style={{ background: 'linear-gradient(135deg, #dc2626, #b91c1c)' }}>
             <FiUserPlus className="w-4 h-4" /> Add Supervisor
           </button>
@@ -289,12 +324,9 @@ export default function SupervisorsPage() {
 
       {/* List */}
       {filteredSups.length === 0 ? (
-        <div className="rounded-2xl border p-16 text-center"
-             style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
+        <div className="rounded-2xl border p-16 text-center" style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
           <FiUsers className="w-12 h-12 mx-auto mb-3" style={{ color: 'var(--text-muted)' }} />
-          <p className="font-semibold text-white mb-1">
-            {search ? 'No supervisors match your search' : 'No supervisors yet'}
-          </p>
+          <p className="font-semibold text-white">{search ? 'No supervisors match your search' : 'No supervisors yet'}</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -311,20 +343,24 @@ export default function SupervisorsPage() {
               <div key={sup._id} className="rounded-2xl border overflow-hidden"
                    style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
                 <div className="p-5 flex items-center gap-4">
-                  {sup.avatar?.url ? (
-                    <img src={sup.avatar.url} alt={sup.name}
-                         className="w-12 h-12 rounded-full object-cover shrink-0" />
-                  ) : (
-                    <div className="w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold text-white shrink-0"
-                         style={{ background: 'linear-gradient(135deg, #dc2626, #b91c1c)' }}>
-                      {sup.name.charAt(0).toUpperCase()}
-                    </div>
-                  )}
+                  {/* ── Supervisor avatar ── */}
+                  {sup.avatar?.url
+                    ? <img src={sup.avatar.url} alt={sup.name}
+                           className="w-12 h-12 rounded-full object-cover shrink-0 border-2"
+                           style={{ borderColor: '#dc2626' }} />
+                    : (
+                      <div className="w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold text-white shrink-0"
+                           style={{ background: 'linear-gradient(135deg, #dc2626, #b91c1c)' }}>
+                        {sup.name.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-sm font-bold text-white">{sup.name}</span>
-                      <span className={`text-xs px-2 py-0.5 rounded ${sup.isActive ? 'text-green-400' : 'text-red-400'}`}
-                            style={{ background: sup.isActive ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)' }}>
+                      <span className="text-xs px-2 py-0.5 rounded"
+                            style={{ background: sup.isActive ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)',
+                                     color:      sup.isActive ? '#22c55e' : '#ef4444' }}>
                         {sup.isActive ? 'Active' : 'Inactive'}
                       </span>
                     </div>
@@ -340,46 +376,39 @@ export default function SupervisorsPage() {
                       </span>
                     </div>
                   </div>
+
                   <div className="flex items-center gap-2 shrink-0">
                     <button onClick={() => handleToggle(sup._id)} disabled={actionLoading === sup._id}
                             className="p-2 rounded-lg transition-all"
                             style={{ background: sup.isActive ? 'rgba(239,68,68,0.08)' : 'rgba(34,197,94,0.08)',
-                                     color: sup.isActive ? '#ef4444' : '#22c55e' }}
+                                     color:      sup.isActive ? '#ef4444' : '#22c55e' }}
                             title={sup.isActive ? 'Deactivate' : 'Activate'}>
                       {actionLoading === sup._id
                         ? <div className="w-4 h-4 rounded-full border-2 border-current border-t-transparent animate-spin" />
                         : sup.isActive ? <FiUserX className="w-4 h-4" /> : <FiUserCheck className="w-4 h-4" />}
                     </button>
-                    <button onClick={() => openEdit(sup)}
-                            className="p-2 rounded-lg transition-all hover:bg-blue-500/10"
-                            style={{ color: '#60a5fa' }}>
+                    <button onClick={() => openEdit(sup)} className="p-2 rounded-lg hover:bg-blue-500/10" style={{ color: '#60a5fa' }}>
                       <FiEdit2 className="w-4 h-4" />
                     </button>
-                    <button onClick={() => setDeleteTarget(sup)}
-                            className="p-2 rounded-lg transition-all hover:bg-red-500/10"
-                            style={{ color: '#ef4444' }}>
+                    <button onClick={() => setDeleteTarget(sup)} className="p-2 rounded-lg hover:bg-red-500/10" style={{ color: '#ef4444' }}>
                       <FiTrash2 className="w-4 h-4" />
                     </button>
-                    <button onClick={() => toggleExpand(sup._id)}
-                            className="p-2 rounded-lg transition-all hover:bg-white/5"
-                            style={{ color: 'var(--text-secondary)' }}>
+                    <button onClick={() => toggleExpand(sup._id)} className="p-2 rounded-lg hover:bg-white/5" style={{ color: 'var(--text-secondary)' }}>
                       {isExpanded ? <FiChevronUp className="w-4 h-4" /> : <FiChevronDown className="w-4 h-4" />}
                     </button>
                   </div>
                 </div>
 
+                {/* Expanded interns */}
                 {isExpanded && (
-                  <div className="border-t px-5 pb-5 pt-4 space-y-4"
-                       style={{ borderColor: 'var(--border)' }}>
+                  <div className="border-t px-5 pb-5 pt-4 space-y-4" style={{ borderColor: 'var(--border)' }}>
                     <div className="flex items-center justify-between gap-3 flex-wrap">
-                      <p className="text-xs font-semibold uppercase tracking-wider"
-                         style={{ color: 'var(--text-secondary)' }}>
+                      <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>
                         Interns under {sup.name}
                       </p>
                       <div className="flex items-center gap-2">
                         <div className="relative">
-                          <FiSearch className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3"
-                                    style={{ color: 'var(--text-muted)' }} />
+                          <FiSearch className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3" style={{ color: 'var(--text-muted)' }} />
                           <input type="text" placeholder="Search intern..."
                                  value={internSearch[sup._id] || ''}
                                  onChange={e => setInternSearch(prev => ({ ...prev, [sup._id]: e.target.value }))}
@@ -387,17 +416,17 @@ export default function SupervisorsPage() {
                                  style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }} />
                         </div>
                         <button onClick={() => downloadInternsPDF(sup, supInterns)}
-                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:opacity-90"
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold hover:opacity-90"
                                 style={{ background: 'rgba(220,38,38,0.12)', color: '#dc2626', border: '1px solid rgba(220,38,38,0.25)' }}>
-                          <FiDownload className="w-3.5 h-3.5" /> PDF Report
+                          <FiDownload className="w-3.5 h-3.5" /> PDF
                         </button>
                       </div>
                     </div>
 
                     {internsLoading === sup._id ? (
                       <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-muted)' }}>
-                        <div className="w-4 h-4 rounded-full border-2 border-t-transparent animate-spin"
-                             style={{ borderColor: '#dc2626' }} />Loading...
+                        <div className="w-4 h-4 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: '#dc2626' }} />
+                        Loading...
                       </div>
                     ) : filteredInterns.length === 0 ? (
                       <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
@@ -407,17 +436,18 @@ export default function SupervisorsPage() {
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                         {filteredInterns.map((intern) => (
                           <div key={intern._id}
-                               className="flex items-center gap-3 px-3 py-2.5 rounded-xl border"
-                               style={{ background: 'var(--bg-surface)', borderColor: 'var(--border)' }}>
-                            {intern.avatar?.url ? (
-                              <img src={intern.avatar.url} alt={intern.name}
-                                   className="w-8 h-8 rounded-full object-cover shrink-0" />
-                            ) : (
-                              <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0"
-                                   style={{ background: 'linear-gradient(135deg, var(--intern-primary), var(--intern-secondary))' }}>
-                                {intern.name.charAt(0).toUpperCase()}
-                              </div>
-                            )}
+                               className="flex items-center gap-3 px-3 py-2.5 rounded-xl border cursor-pointer hover:border-[#dc2626] transition-all"
+                               style={{ background: 'var(--bg-surface)', borderColor: 'var(--border)' }}
+                               onClick={() => setViewIntern(intern)}>
+                            {intern.avatar?.url
+                              ? <img src={intern.avatar.url} alt={intern.name}
+                                     className="w-8 h-8 rounded-full object-cover shrink-0" />
+                              : (
+                                <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0"
+                                     style={{ background: 'linear-gradient(135deg, var(--intern-primary), var(--intern-secondary))' }}>
+                                  {intern.name.charAt(0).toUpperCase()}
+                                </div>
+                              )}
                             <div className="min-w-0 flex-1">
                               <div className="text-xs font-semibold text-white truncate">{intern.name}</div>
                               <div className="text-xs truncate" style={{ color: 'var(--text-muted)' }}>{intern.email}</div>
@@ -445,8 +475,7 @@ export default function SupervisorsPage() {
               <h3 className="text-lg font-bold text-white" style={{ fontFamily: 'var(--font-display)' }}>
                 {modal === 'create' ? 'Add Supervisor' : 'Edit Supervisor'}
               </h3>
-              <button onClick={closeModal} className="p-1 rounded-lg hover:bg-white/5"
-                      style={{ color: 'var(--text-secondary)' }}>
+              <button onClick={closeModal} className="p-1 rounded-lg hover:bg-white/5" style={{ color: 'var(--text-secondary)' }}>
                 <FiX className="w-5 h-5" />
               </button>
             </div>
@@ -457,40 +486,29 @@ export default function SupervisorsPage() {
               </div>
             )}
             <form onSubmit={handleFormSubmit} className="space-y-4">
-              {/* Name */}
+              {[
+                { label: 'Full Name', key: 'name',  type: 'text',  placeholder: 'John Silva'        },
+                { label: 'Email',     key: 'email', type: 'email', placeholder: 'john@company.com'  },
+              ].map(f => (
+                <div key={f.key}>
+                  <label className="block text-xs font-semibold mb-2" style={{ color: 'var(--text-secondary)' }}>
+                    {f.label} <span className="text-red-400">*</span>
+                  </label>
+                  <input type={f.type} required value={form[f.key]} placeholder={f.placeholder}
+                         onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))}
+                         className="w-full px-4 py-2.5 rounded-xl text-white placeholder-slate-600 text-sm outline-none"
+                         style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}
+                         onFocus={e => e.target.style.border = '1px solid rgba(220,38,38,0.45)'}
+                         onBlur={e  => e.target.style.border = '1px solid var(--border)'} />
+                </div>
+              ))}
               <div>
                 <label className="block text-xs font-semibold mb-2" style={{ color: 'var(--text-secondary)' }}>
-                  Full Name <span className="text-red-400">*</span>
-                </label>
-                <input type="text" required value={form.name} placeholder="John Silva"
-                       onChange={e => setForm(p => ({ ...p, name: e.target.value }))}
-                       className="w-full px-4 py-2.5 rounded-xl text-white placeholder-slate-600 text-sm outline-none"
-                       style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}
-                       onFocus={e => e.target.style.border = '1px solid rgba(220,38,38,0.45)'}
-                       onBlur={e  => e.target.style.border = '1px solid var(--border)'} />
-              </div>
-              {/* Email */}
-              <div>
-                <label className="block text-xs font-semibold mb-2" style={{ color: 'var(--text-secondary)' }}>
-                  Email <span className="text-red-400">*</span>
-                </label>
-                <input type="email" required value={form.email} placeholder="john@company.com"
-                       onChange={e => setForm(p => ({ ...p, email: e.target.value }))}
-                       className="w-full px-4 py-2.5 rounded-xl text-white placeholder-slate-600 text-sm outline-none"
-                       style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}
-                       onFocus={e => e.target.style.border = '1px solid rgba(220,38,38,0.45)'}
-                       onBlur={e  => e.target.style.border = '1px solid var(--border)'} />
-              </div>
-              {/* Password with eye icon */}
-              <div>
-                <label className="block text-xs font-semibold mb-2" style={{ color: 'var(--text-secondary)' }}>
-                  {modal === 'create' ? 'Password' : 'New Password (leave blank to keep)'}
-                  {modal === 'create' && <span className="text-red-400"> *</span>}
+                  {modal === 'create' ? <>Password <span className="text-red-400">*</span></> : 'New Password (leave blank to keep)'}
                 </label>
                 <div className="relative">
-                  <input type={showPass ? 'text' : 'password'}
-                         required={modal === 'create'} value={form.password}
-                         placeholder="••••••••"
+                  <input type={showPass ? 'text' : 'password'} required={modal === 'create'}
+                         value={form.password} placeholder="••••••••"
                          onChange={e => setForm(p => ({ ...p, password: e.target.value }))}
                          className="w-full px-4 pr-11 py-2.5 rounded-xl text-white placeholder-slate-600 text-sm outline-none"
                          style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}
@@ -503,7 +521,6 @@ export default function SupervisorsPage() {
                   </button>
                 </div>
               </div>
-
               <div className="flex gap-3 pt-2">
                 <button type="button" onClick={closeModal}
                         className="flex-1 py-2.5 rounded-xl font-semibold text-sm border"
@@ -526,14 +543,11 @@ export default function SupervisorsPage() {
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="w-full max-w-sm rounded-2xl p-6 space-y-5 text-center"
                style={{ background: 'var(--bg-card)', border: '1px solid rgba(239,68,68,0.2)' }}>
-            <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto"
-                 style={{ background: 'rgba(239,68,68,0.10)' }}>
+            <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto" style={{ background: 'rgba(239,68,68,0.10)' }}>
               <FiTrash2 className="w-6 h-6 text-red-400" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-white mb-1" style={{ fontFamily: 'var(--font-display)' }}>
-                Delete Supervisor
-              </h3>
+              <h3 className="text-lg font-bold text-white mb-1">Delete Supervisor</h3>
               <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
                 Delete <strong className="text-white">{deleteTarget.name}</strong>? This cannot be undone.
               </p>
