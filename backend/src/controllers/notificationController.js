@@ -7,8 +7,10 @@ const getNotifications = async (req, res) => {
     const notifications = await Notification.find({ recipient: req.user._id })
       .sort({ createdAt: -1 })
       .limit(50)
-      .populate('taskId',   'title')
-      .populate('updateId', 'content');
+      .populate('taskId',         'title')
+      .populate('updateId',       'content')
+      .populate('announcementId', 'title content')   // ← නව
+      .populate('inquiryId',      'subject status'); // ← නව
 
     res.json(notifications);
   } catch (err) {
