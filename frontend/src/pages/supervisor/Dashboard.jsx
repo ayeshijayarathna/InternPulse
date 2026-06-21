@@ -3,7 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import {
   FiActivity, FiUsers, FiCheckSquare, FiFileText,
-  FiLogOut, FiMenu, FiX, FiBell
+  FiLogOut, FiMenu, FiX, FiBell, FiMessageSquare, FiVolume2 // ← නව icons
 } from 'react-icons/fi';
 
 import { useNotifications }  from '../../context/NotificationContext';
@@ -13,6 +13,8 @@ import InternsPage           from './sections/InternsPage';
 import TasksPage             from './sections/TasksPage';
 import SubmissionsPage       from './sections/SubmissionsPage';
 import NotificationsPage     from './sections/supervisor_NotificationsPage';
+import AnnouncementsPage     from './sections/AnnouncementsPage';     // ← නව
+import InquiriesPage         from './sections/InquiriesPage';         // ← නව
 
 export default function SupervisorDashboard() {
   const { user, logout, setUser }      = useAuth();
@@ -24,11 +26,13 @@ export default function SupervisorDashboard() {
   const handleLogout = () => { logout(); navigate('/system/admin'); };
 
   const navItems = [
-    { id: 'overview',      label: 'Overview',     icon: FiActivity    },
-    { id: 'interns',       label: 'Interns',       icon: FiUsers       },
-    { id: 'tasks',         label: 'Tasks',         icon: FiCheckSquare },
-    { id: 'submissions',   label: 'Submissions',   icon: FiFileText    },
-    { id: 'notifications', label: 'Notifications', icon: FiBell, badge: unreadCount },
+    { id: 'overview',       label: 'Overview',       icon: FiActivity      },
+    { id: 'interns',        label: 'Interns',         icon: FiUsers         },
+    { id: 'tasks',          label: 'Tasks',           icon: FiCheckSquare   },
+    { id: 'submissions',    label: 'Submissions',     icon: FiFileText      },
+    { id: 'inquiries',      label: 'Inquiries',       icon: FiMessageSquare }, // ← නව
+    { id: 'announcements',  label: 'Announcements',   icon: FiVolume2       }, // ← නව
+    { id: 'notifications',  label: 'Notifications',   icon: FiBell, badge: unreadCount },
   ];
 
   const renderContent = () => {
@@ -37,6 +41,8 @@ export default function SupervisorDashboard() {
       case 'interns':       return <InternsPage />;
       case 'tasks':         return <TasksPage />;
       case 'submissions':   return <SubmissionsPage />;
+      case 'inquiries':     return <InquiriesPage />;         // ← නව
+      case 'announcements': return <AnnouncementsPage />;     // ← නව
       case 'notifications': return <NotificationsPage />;
       default:              return <OverviewPage />;
     }
