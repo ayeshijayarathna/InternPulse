@@ -3,7 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import {
   FiGrid, FiCheckSquare, FiFileText, FiPlusCircle,
-  FiLogOut, FiMenu, FiX, FiBell, FiUser
+  FiLogOut, FiMenu, FiX, FiBell, FiUser, FiMessageSquare // ← FiMessageSquare add
 } from 'react-icons/fi';
 
 import { useNotifications }  from '../../context/NotificationContext';
@@ -14,6 +14,7 @@ import SubmitUpdatePage      from './sections/SubmitUpdatePage';
 import OverviewPage          from './sections/OverviewPage';
 import NotificationsPage     from './sections/intern_NotificationsPage';
 import EditProfilePage       from './sections/EditProfilePage';
+import InquiryPage           from './sections/InquiryPage'; 
 
 export default function InternDashboard() {
   const { user, logout, setUser }         = useAuth();
@@ -25,12 +26,13 @@ export default function InternDashboard() {
   const handleLogout = () => { logout(); navigate('/login'); };
 
   const navItems = [
-    { id: 'overview',      label: 'Overview',       icon: FiGrid        },
-    { id: 'tasks',         label: 'My Tasks',        icon: FiCheckSquare },
-    { id: 'submit',        label: 'Submit Update',   icon: FiPlusCircle  },
-    { id: 'submissions',   label: 'My Submissions',  icon: FiFileText    },
+    { id: 'overview',      label: 'Overview',       icon: FiGrid          },
+    { id: 'tasks',         label: 'My Tasks',        icon: FiCheckSquare   },
+    { id: 'submit',        label: 'Submit Update',   icon: FiPlusCircle    },
+    { id: 'submissions',   label: 'My Submissions',  icon: FiFileText      },
+    { id: 'inquiry',       label: 'My Inquiries',    icon: FiMessageSquare }, // ← නව
     { id: 'notifications', label: 'Notifications',   icon: FiBell, badge: unreadCount },
-    { id: 'edit-profile',  label: 'Edit Profile',    icon: FiUser        },
+    { id: 'edit-profile',  label: 'Edit Profile',    icon: FiUser          },
   ];
 
   const renderContent = () => {
@@ -39,6 +41,7 @@ export default function InternDashboard() {
       case 'tasks':         return <MyTasksPage />;
       case 'submit':        return <SubmitUpdatePage />;
       case 'submissions':   return <MySubmissionsPage />;
+      case 'inquiry':       return <InquiryPage />;      
       case 'notifications': return <NotificationsPage />;
       case 'edit-profile':  return <EditProfilePage />;
       default:              return <OverviewPage setActiveTab={setActiveTab} />;
