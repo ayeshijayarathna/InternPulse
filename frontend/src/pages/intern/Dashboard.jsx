@@ -14,7 +14,7 @@ import SubmitUpdatePage      from './sections/SubmitUpdatePage';
 import OverviewPage          from './sections/OverviewPage';
 import NotificationsPage     from './sections/intern_NotificationsPage';
 import EditProfilePage       from './sections/EditProfilePage';
-import InquiryPage           from './sections/InquiryPage'; 
+import InquiryPage           from './sections/intern_InquiryPage'; 
 
 export default function InternDashboard() {
   const { user, logout, setUser }         = useAuth();
