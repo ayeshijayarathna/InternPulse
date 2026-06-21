@@ -1,15 +1,16 @@
 import { useState } from 'react';
 import {
   FiBell, FiCheckCircle, FiFilter, FiCheck,
-  FiClock, FiClipboard, FiMail,
+  FiClock, FiClipboard, FiMail, FiMessageSquare, // ← FiMessageSquare add
 } from 'react-icons/fi';
 import { useNotifications } from '../../../context/NotificationContext';
 
-//Config 
+// Config 
 const TYPE_META = {
   task_assigned: { icon: '📋', label: 'Task Assigned',   color: '#6366f1' },
   task_deadline: { icon: '⏰', label: 'Deadline Reminder', color: '#ef4444' },
   welcome:       { icon: '👋', label: 'Welcome',          color: '#22c55e' },
+  inquiry_reply: { icon: '💬', label: 'Inquiry Reply',    color: '#a78bfa' }, // ← නව
 };
 
 const FILTERS = [
@@ -17,6 +18,7 @@ const FILTERS = [
   { id: 'unread',        label: 'Unread'    },
   { id: 'task_assigned', label: 'Tasks'     },
   { id: 'task_deadline', label: 'Deadlines' },
+  { id: 'inquiry_reply', label: 'Replies'   }, // ← නව
 ];
 
 function timeAgo(date) {
@@ -37,7 +39,7 @@ export default function InternNotificationsPage() {
   const [filter, setFilter] = useState('all');
 
   // intern relevant notification types only
-  const internTypes = ['task_assigned', 'task_deadline', 'welcome'];
+  const internTypes = ['task_assigned', 'task_deadline', 'welcome', 'inquiry_reply']; // ← inquiry_reply add
   const internNotifications = notifications.filter(n => internTypes.includes(n.type));
 
   const filtered = internNotifications.filter(n => {
@@ -85,10 +87,10 @@ export default function InternNotificationsPage() {
       {/* ── Stats row ── */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
-          { label: 'Total',     value: internNotifications.length,                                  icon: FiBell,      color: '#94a3b8' },
-          { label: 'Unread',    value: internUnread,                                                icon: FiMail,      color: '#6366f1' },
-          { label: 'Tasks',     value: internNotifications.filter(n=>n.type==='task_assigned').length, icon: FiClipboard, color: '#f97316' },
-          { label: 'Deadlines', value: internNotifications.filter(n=>n.type==='task_deadline').length,  icon: FiClock,     color: '#ef4444' },
+          { label: 'Total',     value: internNotifications.length,                                      icon: FiBell,          color: '#94a3b8' },
+          { label: 'Unread',    value: internUnread,                                                    icon: FiMail,          color: '#6366f1' },
+          { label: 'Tasks',     value: internNotifications.filter(n=>n.type==='task_assigned').length,  icon: FiClipboard,     color: '#f97316' },
+          { label: 'Replies',   value: internNotifications.filter(n=>n.type==='inquiry_reply').length,  icon: FiMessageSquare, color: '#a78bfa' }, // ← Deadlines → Replies
         ].map((s, i) => (
           <div
             key={i}
