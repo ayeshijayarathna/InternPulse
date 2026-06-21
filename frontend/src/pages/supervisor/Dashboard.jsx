@@ -14,7 +14,7 @@ import TasksPage             from './sections/TasksPage';
 import SubmissionsPage       from './sections/SubmissionsPage';
 import NotificationsPage     from './sections/supervisor_NotificationsPage';
 import AnnouncementsPage     from './sections/supervisor_AnnouncementsPage';    
-import InquiriesPage         from './sections/InquiriesPage';      
+import InquiriesPage         from './sections/supervisor_InquiriesPage';      
 
 export default function SupervisorDashboard() {
   const { user, logout, setUser }      = useAuth();
