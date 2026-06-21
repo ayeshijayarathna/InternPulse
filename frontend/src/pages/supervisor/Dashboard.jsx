@@ -3,7 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import {
   FiActivity, FiUsers, FiCheckSquare, FiFileText,
-  FiLogOut, FiMenu, FiX, FiBell, FiMessageSquare, FiVolume2 // ← නව icons
+  FiLogOut, FiMenu, FiX, FiBell, FiMessageSquare, FiVolume2 
 } from 'react-icons/fi';
 
 import { useNotifications }  from '../../context/NotificationContext';
@@ -13,7 +13,7 @@ import InternsPage           from './sections/InternsPage';
 import TasksPage             from './sections/TasksPage';
 import SubmissionsPage       from './sections/SubmissionsPage';
 import NotificationsPage     from './sections/supervisor_NotificationsPage';
-import AnnouncementsPage     from './sections/AnnouncementsPage';    
+import AnnouncementsPage     from './sections/supervisor_AnnouncementsPage';    
 import InquiriesPage         from './sections/InquiriesPage';      
 
 export default function SupervisorDashboard() {
