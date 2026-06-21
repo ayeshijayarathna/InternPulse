@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
   FiBell, FiCheckCircle, FiFilter, FiCheck,
-  FiClock, FiClipboard, FiMail, FiMessageSquare, // ← FiMessageSquare add
+  FiClock, FiClipboard, FiMail, FiMessageSquare, 
 } from 'react-icons/fi';
 import { useNotifications } from '../../../context/NotificationContext';
 
@@ -10,7 +10,7 @@ const TYPE_META = {
   task_assigned: { icon: '📋', label: 'Task Assigned',   color: '#6366f1' },
   task_deadline: { icon: '⏰', label: 'Deadline Reminder', color: '#ef4444' },
   welcome:       { icon: '👋', label: 'Welcome',          color: '#22c55e' },
-  inquiry_reply: { icon: '💬', label: 'Inquiry Reply',    color: '#a78bfa' }, // ← නව
+  inquiry_reply: { icon: '💬', label: 'Inquiry Reply',    color: '#a78bfa' },
 };
 
 const FILTERS = [
@@ -39,7 +39,7 @@ export default function InternNotificationsPage() {
   const [filter, setFilter] = useState('all');
 
   // intern relevant notification types only
-  const internTypes = ['task_assigned', 'task_deadline', 'welcome', 'inquiry_reply']; // ← inquiry_reply add
+  const internTypes = ['task_assigned', 'task_deadline', 'welcome', 'inquiry_reply']; 
   const internNotifications = notifications.filter(n => internTypes.includes(n.type));
 
   const filtered = internNotifications.filter(n => {
@@ -90,7 +90,7 @@ export default function InternNotificationsPage() {
           { label: 'Total',     value: internNotifications.length,                                      icon: FiBell,          color: '#94a3b8' },
           { label: 'Unread',    value: internUnread,                                                    icon: FiMail,          color: '#6366f1' },
           { label: 'Tasks',     value: internNotifications.filter(n=>n.type==='task_assigned').length,  icon: FiClipboard,     color: '#f97316' },
-          { label: 'Replies',   value: internNotifications.filter(n=>n.type==='inquiry_reply').length,  icon: FiMessageSquare, color: '#a78bfa' }, // ← Deadlines → Replies
+          { label: 'Replies',   value: internNotifications.filter(n=>n.type==='inquiry_reply').length,  icon: FiMessageSquare, color: '#a78bfa' }, 
         ].map((s, i) => (
           <div
             key={i}

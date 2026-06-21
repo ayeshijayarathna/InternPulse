@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { FiShield, FiUsers, FiLogOut, FiMenu, FiX, FiGrid, FiVolume2 } from 'react-icons/fi'; // ← FiVolume2 add
+import { FiShield, FiUsers, FiLogOut, FiMenu, FiX, FiGrid, FiVolume2 } from 'react-icons/fi'; 
 
 import AvatarUpload           from '../../components/common/AvatarUpload';
 import SuperAdminOverview     from './sections/OverviewPage';
 import SupervisorsPage        from './sections/SupervisorsPage';
-import AnnouncementsPage      from './sections/AnnouncementsPage'; // ← නව
+import AnnouncementsPage      from './sections/AnnouncementsPage';
 
 export default function SuperAdminDashboard() {
   const { user, logout, setUser } = useAuth();
@@ -19,14 +19,14 @@ export default function SuperAdminDashboard() {
   const navItems = [
     { id: 'overview',       label: 'Overview',       icon: FiGrid    },
     { id: 'supervisors',    label: 'Supervisors',    icon: FiUsers   },
-    { id: 'announcements',  label: 'Announcements',  icon: FiVolume2 }, // ← නව
+    { id: 'announcements',  label: 'Announcements',  icon: FiVolume2 }, 
   ];
 
   const renderContent = () => {
     switch (activeTab) {
       case 'overview':      return <SuperAdminOverview setActiveTab={setActiveTab} />;
       case 'supervisors':   return <SupervisorsPage />;
-      case 'announcements': return <AnnouncementsPage />;  // ← නව
+      case 'announcements': return <AnnouncementsPage />;  
       default:              return <SuperAdminOverview setActiveTab={setActiveTab} />;
     }
   };

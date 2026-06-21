@@ -8,16 +8,16 @@ import { useNotifications } from '../../../context/NotificationContext';
 // Config 
 const TYPE_META = {
   submission_received: { icon: '📨', label: 'New Submission', color: '#f97316' },
-  inquiry_received:    { icon: '📩', label: 'New Inquiry',    color: '#6366f1' }, // ← නව
-  announcement:        { icon: '📢', label: 'Announcement',   color: '#f59e0b' }, // ← නව
+  inquiry_received:    { icon: '📩', label: 'New Inquiry',    color: '#6366f1' },
+  announcement:        { icon: '📢', label: 'Announcement',   color: '#f59e0b' }, 
 };
 
 const FILTERS = [
   { id: 'all',                 label: 'All'           },
   { id: 'unread',              label: 'Unread'        },
   { id: 'submission_received', label: 'Submissions'   },
-  { id: 'inquiry_received',    label: 'Inquiries'     }, // ← නව
-  { id: 'announcement',        label: 'Announcements' }, // ← නව
+  { id: 'inquiry_received',    label: 'Inquiries'     }, 
+  { id: 'announcement',        label: 'Announcements' },
 ];
 
 function timeAgo(date) {
@@ -38,7 +38,7 @@ export default function SupervisorNotificationsPage() {
   const [filter, setFilter] = useState('all');
 
   // supervisor relevant types only
-  const supervisorTypes = ['submission_received', 'inquiry_received', 'announcement']; // ← 2 types add
+  const supervisorTypes = ['submission_received', 'inquiry_received', 'announcement']; 
   const supervisorNotifications = notifications.filter(n => supervisorTypes.includes(n.type));
 
   const filtered = supervisorNotifications.filter(n => {
@@ -89,7 +89,7 @@ export default function SupervisorNotificationsPage() {
           { label: 'Total',       value: supervisorNotifications.length,                                          icon: FiBell,          color: '#94a3b8' },
           { label: 'Unread',      value: supervisorUnread,                                                        icon: FiMail,          color: '#f97316' },
           { label: 'Submissions', value: supervisorNotifications.filter(n=>n.type==='submission_received').length, icon: FiSend,          color: '#22c55e' },
-          { label: 'Inquiries',   value: supervisorNotifications.filter(n=>n.type==='inquiry_received').length,    icon: FiMessageSquare, color: '#6366f1' }, // ← නව stat
+          { label: 'Inquiries',   value: supervisorNotifications.filter(n=>n.type==='inquiry_received').length,    icon: FiMessageSquare, color: '#6366f1' }, 
         ].map((s, i) => (
           <div
             key={i}

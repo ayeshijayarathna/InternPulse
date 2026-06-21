@@ -13,8 +13,8 @@ import InternsPage           from './sections/InternsPage';
 import TasksPage             from './sections/TasksPage';
 import SubmissionsPage       from './sections/SubmissionsPage';
 import NotificationsPage     from './sections/supervisor_NotificationsPage';
-import AnnouncementsPage     from './sections/AnnouncementsPage';     // ← නව
-import InquiriesPage         from './sections/InquiriesPage';         // ← නව
+import AnnouncementsPage     from './sections/AnnouncementsPage';    
+import InquiriesPage         from './sections/InquiriesPage';      
 
 export default function SupervisorDashboard() {
   const { user, logout, setUser }      = useAuth();
@@ -30,8 +30,8 @@ export default function SupervisorDashboard() {
     { id: 'interns',        label: 'Interns',         icon: FiUsers         },
     { id: 'tasks',          label: 'Tasks',           icon: FiCheckSquare   },
     { id: 'submissions',    label: 'Submissions',     icon: FiFileText      },
-    { id: 'inquiries',      label: 'Inquiries',       icon: FiMessageSquare }, // ← නව
-    { id: 'announcements',  label: 'Announcements',   icon: FiVolume2       }, // ← නව
+    { id: 'inquiries',      label: 'Inquiries',       icon: FiMessageSquare }, 
+    { id: 'announcements',  label: 'Announcements',   icon: FiVolume2       }, 
     { id: 'notifications',  label: 'Notifications',   icon: FiBell, badge: unreadCount },
   ];
 
@@ -41,8 +41,8 @@ export default function SupervisorDashboard() {
       case 'interns':       return <InternsPage />;
       case 'tasks':         return <TasksPage />;
       case 'submissions':   return <SubmissionsPage />;
-      case 'inquiries':     return <InquiriesPage />;         // ← නව
-      case 'announcements': return <AnnouncementsPage />;     // ← නව
+      case 'inquiries':     return <InquiriesPage />;         
+      case 'announcements': return <AnnouncementsPage />;     
       case 'notifications': return <NotificationsPage />;
       default:              return <OverviewPage />;
     }

@@ -3,7 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import {
   FiGrid, FiCheckSquare, FiFileText, FiPlusCircle,
-  FiLogOut, FiMenu, FiX, FiBell, FiUser, FiMessageSquare // ← FiMessageSquare add
+  FiLogOut, FiMenu, FiX, FiBell, FiUser, FiMessageSquare 
 } from 'react-icons/fi';
 
 import { useNotifications }  from '../../context/NotificationContext';
@@ -30,7 +30,7 @@ export default function InternDashboard() {
     { id: 'tasks',         label: 'My Tasks',        icon: FiCheckSquare   },
     { id: 'submit',        label: 'Submit Update',   icon: FiPlusCircle    },
     { id: 'submissions',   label: 'My Submissions',  icon: FiFileText      },
-    { id: 'inquiry',       label: 'My Inquiries',    icon: FiMessageSquare }, // ← නව
+    { id: 'inquiry',       label: 'My Inquiries',    icon: FiMessageSquare }, 
     { id: 'notifications', label: 'Notifications',   icon: FiBell, badge: unreadCount },
     { id: 'edit-profile',  label: 'Edit Profile',    icon: FiUser          },
   ];
