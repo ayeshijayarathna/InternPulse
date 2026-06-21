@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { FiShield, FiUsers, FiLogOut, FiMenu, FiX, FiGrid } from 'react-icons/fi';
+import { FiShield, FiUsers, FiLogOut, FiMenu, FiX, FiGrid, FiVolume2 } from 'react-icons/fi'; // ← FiVolume2 add
 
-import AvatarUpload       from '../../components/common/AvatarUpload';
-import SuperAdminOverview from './sections/OverviewPage';
-import SupervisorsPage    from './sections/SupervisorsPage';
+import AvatarUpload           from '../../components/common/AvatarUpload';
+import SuperAdminOverview     from './sections/OverviewPage';
+import SupervisorsPage        from './sections/SupervisorsPage';
+import AnnouncementsPage      from './sections/AnnouncementsPage'; // ← නව
 
 export default function SuperAdminDashboard() {
   const { user, logout, setUser } = useAuth();
@@ -16,15 +17,17 @@ export default function SuperAdminDashboard() {
   const handleLogout = () => { logout(); navigate('/sa-login'); };
 
   const navItems = [
-    { id: 'overview',    label: 'Overview',    icon: FiGrid  },
-    { id: 'supervisors', label: 'Supervisors', icon: FiUsers },
+    { id: 'overview',       label: 'Overview',       icon: FiGrid    },
+    { id: 'supervisors',    label: 'Supervisors',    icon: FiUsers   },
+    { id: 'announcements',  label: 'Announcements',  icon: FiVolume2 }, // ← නව
   ];
 
   const renderContent = () => {
     switch (activeTab) {
-      case 'overview':    return <SuperAdminOverview setActiveTab={setActiveTab} />;
-      case 'supervisors': return <SupervisorsPage />;
-      default:            return <SuperAdminOverview setActiveTab={setActiveTab} />;
+      case 'overview':      return <SuperAdminOverview setActiveTab={setActiveTab} />;
+      case 'supervisors':   return <SupervisorsPage />;
+      case 'announcements': return <AnnouncementsPage />;  // ← නව
+      default:              return <SuperAdminOverview setActiveTab={setActiveTab} />;
     }
   };
 
