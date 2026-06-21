@@ -6,7 +6,7 @@ import { FiShield, FiUsers, FiLogOut, FiMenu, FiX, FiGrid, FiVolume2 } from 'rea
 import AvatarUpload           from '../../components/common/AvatarUpload';
 import SuperAdminOverview     from './sections/OverviewPage';
 import SupervisorsPage        from './sections/SupervisorsPage';
-import AnnouncementsPage      from './sections/AnnouncementsPage';
+import AnnouncementsPage      from './sections/superadmin_AnnouncementsPage';
 
 export default function SuperAdminDashboard() {
   const { user, logout, setUser } = useAuth();
