@@ -4,7 +4,7 @@ import {
   FiMail, FiCalendar, FiEdit2, FiTrash2,
   FiX, FiRefreshCw, FiSearch, FiDownload,
   FiEye, FiEyeOff, FiCopy, FiCheck, FiShield,
-  FiMapPin, FiBook, FiFileText, FiUser
+  FiMapPin, FiBook, FiFileText, FiUser, FiCheckCircle
 } from 'react-icons/fi';
 import axiosInstance from '../../../api/axiosInstance';
 
@@ -13,7 +13,7 @@ const EMPTY_FORM = {
   internshipStart: '', internshipEnd: '',
 };
 
-//PDF report 
+// PDF report 
 function downloadInternsPDF(supervisorName, interns) {
   const now  = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
   const rows = interns.length === 0
@@ -58,19 +58,26 @@ function downloadInternsPDF(supervisorName, interns) {
   if (win) { win.onload = () => { win.print(); URL.revokeObjectURL(url); }; }
 }
 
-// Credentials Modal 
+// ── Credentials Modal ─────────────────────────────────────────────────────────
 function CredentialsModal({ credentials, onClose }) {
   const [copiedField, setCopiedField] = useState(null);
   const [showPass,    setShowPass]    = useState(false);
-  const copy = async (text, field) => {
+  const [copyToast,   setCopyToast]   = useState(null); // ← copy toast
+
+  const copy = async (text, field, label) => {
     await navigator.clipboard.writeText(text);
     setCopiedField(field);
+    setCopyToast(`${label} copied!`);             // ← toast show
     setTimeout(() => setCopiedField(null), 2000);
+    setTimeout(() => setCopyToast(null), 2000);   // ← toast hide
   };
+
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
       <div className="w-full max-w-md rounded-2xl p-6 space-y-5"
            style={{ background: 'var(--bg-card)', border: '1px solid rgba(34,197,94,0.25)' }}>
+
+        {/* Header */}
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl flex items-center justify-center"
                style={{ background: 'rgba(34,197,94,0.12)' }}>
@@ -84,14 +91,35 @@ function CredentialsModal({ credentials, onClose }) {
             <FiX className="w-5 h-5" />
           </button>
         </div>
+
+        {/* ── Email sent banner ── */}
+        <div className="flex items-center gap-2 px-4 py-3 rounded-xl"
+             style={{ background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.25)' }}>
+          <FiCheckCircle className="w-4 h-4 shrink-0" style={{ color: '#22c55e' }} />
+          <p className="text-sm font-medium" style={{ color: '#22c55e' }}>
+            Login credentials sent to <strong>{credentials.email}</strong> successfully!
+          </p>
+        </div>
+
+        {/* Warning */}
         <div className="p-3 rounded-xl text-xs"
              style={{ background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)', color: '#f59e0b' }}>
           ⚠️ Copy and share these credentials securely. This dialog cannot be reopened.
         </div>
+
+        {/* Copy toast */}
+        {copyToast && (
+          <div className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold"
+               style={{ background: 'rgba(34,197,94,0.12)', color: '#22c55e', border: '1px solid rgba(34,197,94,0.2)' }}>
+            <FiCheck className="w-3.5 h-3.5" /> {copyToast}
+          </div>
+        )}
+
+        {/* Credentials */}
         <div className="space-y-3">
           {[
-            { label: 'FULL NAME', value: credentials.name,     field: 'name',     canCopy: false },
-            { label: 'EMAIL',     value: credentials.email,    field: 'email',    canCopy: true  },
+            { label: 'FULL NAME', value: credentials.name,  field: 'name',  canCopy: false },
+            { label: 'EMAIL',     value: credentials.email, field: 'email', canCopy: true  },
           ].map(f => (
             <div key={f.field} className="p-3 rounded-xl flex items-center justify-between gap-3"
                  style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
@@ -100,7 +128,7 @@ function CredentialsModal({ credentials, onClose }) {
                 <div className="text-sm text-white font-medium truncate">{f.value}</div>
               </div>
               {f.canCopy && (
-                <button onClick={() => copy(f.value, f.field)}
+                <button onClick={() => copy(f.value, f.field, f.label)}
                         className="shrink-0 p-1.5 rounded-lg hover:bg-white/5"
                         style={{ color: copiedField === f.field ? '#22c55e' : 'var(--text-secondary)' }}>
                   {copiedField === f.field ? <FiCheck className="w-4 h-4" /> : <FiCopy className="w-4 h-4" />}
@@ -108,6 +136,8 @@ function CredentialsModal({ credentials, onClose }) {
               )}
             </div>
           ))}
+
+          {/* Password */}
           <div className="p-3 rounded-xl flex items-center justify-between gap-3"
                style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
             <div className="min-w-0 flex-1">
@@ -121,13 +151,15 @@ function CredentialsModal({ credentials, onClose }) {
                       style={{ color: 'var(--text-secondary)' }}>
                 {showPass ? <FiEyeOff className="w-4 h-4" /> : <FiEye className="w-4 h-4" />}
               </button>
-              <button onClick={() => copy(credentials.password, 'password')} className="p-1.5 rounded-lg hover:bg-white/5"
+              <button onClick={() => copy(credentials.password, 'password', 'Password')}
+                      className="p-1.5 rounded-lg hover:bg-white/5"
                       style={{ color: copiedField === 'password' ? '#22c55e' : 'var(--text-secondary)' }}>
                 {copiedField === 'password' ? <FiCheck className="w-4 h-4" /> : <FiCopy className="w-4 h-4" />}
               </button>
             </div>
           </div>
         </div>
+
         <button onClick={onClose} className="w-full py-2.5 rounded-xl font-semibold text-sm"
                 style={{ background: 'linear-gradient(135deg,#f59e0b,#d97706)', color: '#000' }}>
           Done — I've saved the credentials
@@ -172,8 +204,6 @@ function InternProfileModal({ intern, onClose }) {
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
       <div className="w-full max-w-md rounded-2xl overflow-hidden"
            style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
-
-        {/* Header */}
         <div className="p-5 border-b flex items-center justify-between"
              style={{ borderColor: 'var(--border)', background: 'linear-gradient(135deg,rgba(249,115,22,0.08),rgba(251,146,60,0.04))' }}>
           <div className="flex items-center gap-3">
@@ -186,7 +216,6 @@ function InternProfileModal({ intern, onClose }) {
         </div>
 
         <div className="p-6 space-y-5">
-          {/* Avatar + name */}
           <div className="flex items-center gap-4">
             {intern.avatar?.url
               ? <img src={intern.avatar.url} alt={intern.name}
@@ -210,7 +239,6 @@ function InternProfileModal({ intern, onClose }) {
             </div>
           </div>
 
-          {/* Details grid */}
           <div className="space-y-3">
             {[
               { icon: FiMail,     label: 'Email',            value: intern.email },
@@ -231,7 +259,6 @@ function InternProfileModal({ intern, onClose }) {
             ))}
           </div>
 
-          {/* CV section */}
           <div className="px-4 py-3 rounded-xl flex items-center justify-between gap-3"
                style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)' }}>
             <div className="flex items-center gap-3">
@@ -268,7 +295,7 @@ export default function InternsPage() {
   const [interns,       setInterns]       = useState([]);
   const [loading,       setLoading]       = useState(true);
   const [search,        setSearch]        = useState('');
-  const [modal,         setModal]         = useState(null);  // 'create' | 'edit'
+  const [modal,         setModal]         = useState(null);
   const [editTarget,    setEditTarget]    = useState(null);
   const [formData,      setFormData]      = useState(EMPTY_FORM);
   const [showPass,      setShowPass]      = useState(false);
@@ -278,7 +305,7 @@ export default function InternsPage() {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(null);
   const [credentials,   setCredentials]   = useState(null);
-  const [viewIntern,    setViewIntern]    = useState(null);   // profile modal
+  const [viewIntern,    setViewIntern]    = useState(null);
 
   useEffect(() => { fetchInterns(); }, []);
 
@@ -299,14 +326,8 @@ export default function InternsPage() {
     i.email.toLowerCase().includes(search.toLowerCase())
   );
 
-  const openCreate = () => {
-    setFormData(EMPTY_FORM);
-    setShowPass(false);
-    setFormError('');
-    setModal('create');
-  };
-
-  const openEdit = (i) => {
+  const openCreate = () => { setFormData(EMPTY_FORM); setShowPass(false); setFormError(''); setModal('create'); };
+  const openEdit   = (i) => {
     setEditTarget(i);
     setFormData({
       name:            i.name,
@@ -316,18 +337,9 @@ export default function InternsPage() {
       internshipStart: i.internshipStart ? i.internshipStart.split('T')[0] : '',
       internshipEnd:   i.internshipEnd   ? i.internshipEnd.split('T')[0]   : '',
     });
-    setShowPass(false);
-    setFormError('');
-    setModal('edit');
+    setShowPass(false); setFormError(''); setModal('edit');
   };
-
-  const closeModal = () => {
-    setModal(null);
-    setEditTarget(null);
-    setFormData(EMPTY_FORM);
-    setFormError('');
-    setShowPass(false);
-  };
+  const closeModal = () => { setModal(null); setEditTarget(null); setFormData(EMPTY_FORM); setFormError(''); setShowPass(false); };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -344,17 +356,13 @@ export default function InternsPage() {
 
       if (modal === 'create') {
         if (!formData.password) { setFormError('Password is required'); setFormLoading(false); return; }
-        const res = await axiosInstance.post('/users/intern', fd, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        });
+        await axiosInstance.post('/users/intern', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
         const savedCreds = { name: formData.name, email: formData.email, password: formData.password };
         closeModal();
         fetchInterns();
         setCredentials(savedCreds);
       } else {
-        await axiosInstance.patch(`/users/intern/${editTarget._id}`, fd, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        });
+        await axiosInstance.patch(`/users/intern/${editTarget._id}`, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
         closeModal();
         fetchInterns();
       }
@@ -368,31 +376,22 @@ export default function InternsPage() {
   const handleToggle = async (internId, current) => {
     if (!window.confirm(`${current ? 'Deactivate' : 'Activate'} this intern?`)) return;
     setActionLoading(internId);
-    try {
-      await axiosInstance.patch(`/users/intern/${internId}/toggle`);
-      fetchInterns();
-    } catch { }
-    finally { setActionLoading(null); }
+    try { await axiosInstance.patch(`/users/intern/${internId}/toggle`); fetchInterns(); }
+    catch { } finally { setActionLoading(null); }
   };
 
   const handleDelete = async () => {
     setDeleteLoading(true);
-    try {
-      await axiosInstance.delete(`/users/intern/${deleteTarget._id}`);
-      setDeleteTarget(null);
-      fetchInterns();
-    } catch { }
-    finally { setDeleteLoading(false); }
+    try { await axiosInstance.delete(`/users/intern/${deleteTarget._id}`); setDeleteTarget(null); fetchInterns(); }
+    catch { } finally { setDeleteLoading(false); }
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 rounded-full border-2 animate-spin"
-             style={{ borderColor: 'var(--admin-primary)', borderTopColor: 'transparent' }} />
-      </div>
-    );
-  }
+  if (loading) return (
+    <div className="flex items-center justify-center h-64">
+      <div className="w-8 h-8 rounded-full border-2 animate-spin"
+           style={{ borderColor: 'var(--admin-primary)', borderTopColor: 'transparent' }} />
+    </div>
+  );
 
   return (
     <div className="space-y-6">
@@ -438,7 +437,7 @@ export default function InternsPage() {
         </div>
       </div>
 
-      {/* Intern cards  */}
+      {/* Intern cards */}
       {filtered.length === 0 ? (
         <div className="text-center py-20 rounded-2xl border"
              style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
@@ -454,8 +453,6 @@ export default function InternsPage() {
             <div key={intern._id}
                  className="relative p-5 rounded-2xl border transition-all hover:border-[var(--admin-primary)]"
                  style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
-
-              {/* Status badge */}
               <div className="absolute top-4 right-4">
                 <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold"
                       style={{
@@ -467,8 +464,6 @@ export default function InternsPage() {
                   {intern.isActive ? 'Active' : 'Inactive'}
                 </span>
               </div>
-
-              {/* Avatar + name */}
               <div className="flex flex-col items-center text-center mb-4">
                 {intern.avatar?.url
                   ? <img src={intern.avatar.url} alt={intern.name}
@@ -484,23 +479,18 @@ export default function InternsPage() {
                   {intern.name}
                 </h3>
               </div>
-
-              {/* Info rows */}
               <div className="space-y-2 mb-4">
                 <div className="flex items-center gap-2 text-xs" style={{ color: 'var(--text-secondary)' }}>
-                  <FiMail className="w-3.5 h-3.5 shrink-0" />
-                  <span className="truncate">{intern.email}</span>
+                  <FiMail className="w-3.5 h-3.5 shrink-0" /><span className="truncate">{intern.email}</span>
                 </div>
                 {intern.university && (
                   <div className="flex items-center gap-2 text-xs" style={{ color: 'var(--text-secondary)' }}>
-                    <FiBook className="w-3.5 h-3.5 shrink-0" />
-                    <span className="truncate">{intern.university}</span>
+                    <FiBook className="w-3.5 h-3.5 shrink-0" /><span className="truncate">{intern.university}</span>
                   </div>
                 )}
                 {intern.hometown && (
                   <div className="flex items-center gap-2 text-xs" style={{ color: 'var(--text-secondary)' }}>
-                    <FiMapPin className="w-3.5 h-3.5 shrink-0" />
-                    <span>{intern.hometown}</span>
+                    <FiMapPin className="w-3.5 h-3.5 shrink-0" /><span>{intern.hometown}</span>
                   </div>
                 )}
                 {(intern.internshipStart || intern.internshipEnd) && (
@@ -515,13 +505,10 @@ export default function InternsPage() {
                 )}
                 {intern.cv?.filename && (
                   <div className="flex items-center gap-2 text-xs" style={{ color: '#22c55e' }}>
-                    <FiFileText className="w-3.5 h-3.5 shrink-0" />
-                    <span>CV uploaded</span>
+                    <FiFileText className="w-3.5 h-3.5 shrink-0" /><span>CV uploaded</span>
                   </div>
                 )}
               </div>
-
-              {/* Action buttons */}
               <div className="flex gap-2">
                 <button onClick={() => handleToggle(intern._id, intern.isActive)}
                         disabled={actionLoading === intern._id}
@@ -535,14 +522,11 @@ export default function InternsPage() {
                     ? <div className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
                     : intern.isActive
                       ? <><FiUserX className="w-3.5 h-3.5" />Deactivate</>
-                      : <><FiUserCheck className="w-3.5 h-3.5" />Activate</>
-                  }
+                      : <><FiUserCheck className="w-3.5 h-3.5" />Activate</>}
                 </button>
-                {/* View profile */}
                 <button onClick={() => setViewIntern(intern)}
                         className="p-2 rounded-xl hover:bg-emerald-500/10 transition-all"
-                        style={{ color: '#34d399', border: '1px solid rgba(52,211,153,0.2)' }}
-                        title="View Profile">
+                        style={{ color: '#34d399', border: '1px solid rgba(52,211,153,0.2)' }} title="View Profile">
                   <FiEye className="w-4 h-4" />
                 </button>
                 <button onClick={() => openEdit(intern)}
@@ -561,7 +545,7 @@ export default function InternsPage() {
         </div>
       )}
 
-      {/*  Create / Edit Modal  */}
+      {/* Create / Edit Modal */}
       {modal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="w-full max-w-md rounded-2xl p-6 space-y-5 max-h-[90vh] overflow-y-auto"
@@ -570,8 +554,7 @@ export default function InternsPage() {
               <h3 className="text-xl font-bold text-white" style={{ fontFamily: 'var(--font-display)' }}>
                 {modal === 'create' ? 'Create New Intern' : 'Edit Intern'}
               </h3>
-              <button onClick={closeModal} className="p-1 rounded-lg hover:bg-white/5"
-                      style={{ color: 'var(--text-secondary)' }}>
+              <button onClick={closeModal} className="p-1 rounded-lg hover:bg-white/5" style={{ color: 'var(--text-secondary)' }}>
                 <FiX className="w-5 h-5" />
               </button>
             </div>
@@ -582,7 +565,6 @@ export default function InternsPage() {
               </div>
             )}
             <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Name */}
               <div>
                 <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-secondary)' }}>
                   Full Name <span className="text-red-400">*</span>
@@ -593,7 +575,6 @@ export default function InternsPage() {
                        className="w-full px-4 py-2.5 rounded-xl text-white placeholder-slate-600 text-sm outline-none"
                        style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }} />
               </div>
-              {/* Email */}
               <div>
                 <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-secondary)' }}>
                   Email <span className="text-red-400">*</span>
@@ -604,7 +585,6 @@ export default function InternsPage() {
                        className="w-full px-4 py-2.5 rounded-xl text-white placeholder-slate-600 text-sm outline-none"
                        style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }} />
               </div>
-              {/* Password */}
               <div>
                 <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-secondary)' }}>
                   {modal === 'create' ? <>Password <span className="text-red-400">*</span></> : 'New Password (leave blank to keep)'}
@@ -622,40 +602,29 @@ export default function InternsPage() {
                   </button>
                 </div>
               </div>
-
-              {/* Internship dates */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-secondary)' }}>
-                    Start Date
-                  </label>
+                  <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-secondary)' }}>Start Date</label>
                   <input type="date" value={formData.internshipStart}
                          onChange={e => setFormData(p => ({ ...p, internshipStart: e.target.value }))}
                          className="w-full px-3 py-2.5 rounded-xl text-white text-sm outline-none"
                          style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', colorScheme: 'dark' }} />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-secondary)' }}>
-                    End Date
-                  </label>
+                  <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-secondary)' }}>End Date</label>
                   <input type="date" value={formData.internshipEnd}
                          onChange={e => setFormData(p => ({ ...p, internshipEnd: e.target.value }))}
                          className="w-full px-3 py-2.5 rounded-xl text-white text-sm outline-none"
                          style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', colorScheme: 'dark' }} />
                 </div>
               </div>
-
-              {/* Avatar */}
               <div>
-                <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-secondary)' }}>
-                  Avatar (Optional)
-                </label>
+                <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-secondary)' }}>Avatar (Optional)</label>
                 <input type="file" accept="image/*"
                        onChange={e => setFormData(p => ({ ...p, avatar: e.target.files[0] || null }))}
                        className="w-full px-4 py-2.5 rounded-xl text-sm text-white"
                        style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }} />
               </div>
-
               <div className="flex gap-3 pt-2">
                 <button type="button" onClick={closeModal}
                         className="flex-1 py-2.5 rounded-xl font-semibold text-sm border"
@@ -673,7 +642,7 @@ export default function InternsPage() {
         </div>
       )}
 
-      {/* ── Delete confirm ── */}
+      {/* Delete confirm */}
       {deleteTarget && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="w-full max-w-sm rounded-2xl p-6 space-y-5 text-center"
