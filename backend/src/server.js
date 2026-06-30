@@ -54,8 +54,10 @@ app.use('/api/tasks',         require('./routes/tasks'));
 app.use('/api/updates',       require('./routes/updates'));
 app.use('/api/super-admin',   require('./routes/superAdmin'));
 app.use('/api/notifications', require('./routes/notifications'));
-app.use('/api/announcements', require('./routes/announcements')); // ← නව
-app.use('/api/inquiries',     require('./routes/inquiries'));     // ← නව
+app.use('/api/announcements', require('./routes/announcements'));
+app.use('/api/inquiries',     require('./routes/inquiries'));    
+app.use('/api/required-days', require('./routes/requiredDays'));
+
 
 // Protected file download
 // GET /api/files/:filename  — JWT required, streams file to client
