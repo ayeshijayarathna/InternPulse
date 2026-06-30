@@ -17,6 +17,9 @@ const notificationSchema = new mongoose.Schema(
         'announcement',        // supervisor: new announcement from super admin
         'inquiry_received',    // supervisor: intern sent inquiry
         'inquiry_reply',       // intern: supervisor replied
+        'required_day_assigned',     // intern: supervisor scheduled an office day
+        'required_day_unavailable',  // supervisor: intern can't make a required day
+        'required_day_reply',        // intern: supervisor replied to their reason
       ],
       required: true,
     },
@@ -28,6 +31,7 @@ const notificationSchema = new mongoose.Schema(
     updateId:       { type: mongoose.Schema.Types.ObjectId, ref: 'TaskUpdate',   default: null },
     announcementId: { type: mongoose.Schema.Types.ObjectId, ref: 'Announcement', default: null },
     inquiryId:      { type: mongoose.Schema.Types.ObjectId, ref: 'Inquiry',      default: null },
+    requiredDayId:  { type: mongoose.Schema.Types.ObjectId, ref: 'RequiredDay',  default: null },
   },
   { timestamps: true }
 );
