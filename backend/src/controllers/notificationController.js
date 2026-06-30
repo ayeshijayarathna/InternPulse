@@ -9,8 +9,9 @@ const getNotifications = async (req, res) => {
       .limit(50)
       .populate('taskId',         'title')
       .populate('updateId',       'content')
-      .populate('announcementId', 'title content')   // ← නව
-      .populate('inquiryId',      'subject status'); // ← නව
+      .populate('announcementId', 'title content')
+      .populate('inquiryId',      'subject status')
+      .populate('requiredDayId',  'date status'); 
 
     res.json(notifications);
   } catch (err) {
