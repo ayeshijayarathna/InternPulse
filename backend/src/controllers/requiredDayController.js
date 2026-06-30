@@ -9,7 +9,7 @@ const toMidnightUTC = (input) => {
   return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
 };
 
-// POST /api/required-days 
+//POST /api/required-days 
 // Supervisor: assign one or more interns to a required date
 const createRequiredDays = async (req, res) => {
   try {
@@ -47,10 +47,11 @@ const createRequiredDays = async (req, res) => {
         // Notify the intern
         const io = req.app.locals.io;
         createNotification(io, {
-          recipient: intern._id,
-          type:      'required_day_assigned',
-          title:     '📅 Office Day Assigned',
-          message:   `You're required to come in on ${normalizedDate.toDateString()}.`,
+          recipient:     intern._id,
+          type:          'required_day_assigned',
+          title:         '📅 Office Day Assigned',
+          message:       `You're required to come in on ${normalizedDate.toDateString()}.`,
+          requiredDayId: doc._id,
         });
       } catch (err) {
         // Duplicate (already assigned this intern on this date) — skip silently
@@ -69,7 +70,7 @@ const createRequiredDays = async (req, res) => {
   }
 };
 
-// GET /api/required-days/by-date/:date
+// GET /api/required-days/by-date/:date 
 // Supervisor: list of own interns required on a specific date
 const getRequiredDaysByDate = async (req, res) => {
   try {
@@ -164,10 +165,11 @@ const respondToRequiredDay = async (req, res) => {
     if (status === 'unavailable') {
       const io = req.app.locals.io;
       createNotification(io, {
-        recipient: entry.supervisor,
-        type:      'required_day_unavailable',
-        title:     `⚠️ ${req.user.name} can't make it`,
-        message:   `${req.user.name} marked ${entry.date.toDateString()} as unavailable: "${reason.trim()}"`,
+        recipient:     entry.supervisor,
+        type:          'required_day_unavailable',
+        title:         `⚠️ ${req.user.name} can't make it`,
+        message:       `${req.user.name} marked ${entry.date.toDateString()} as unavailable: "${reason.trim()}"`,
+        requiredDayId: entry._id,
       });
     }
 
@@ -196,10 +198,11 @@ const replyToRequiredDay = async (req, res) => {
 
     const io = req.app.locals.io;
     createNotification(io, {
-      recipient: entry.intern,
-      type:      'required_day_reply',
-      title:     '💬 Your supervisor replied',
-      message:   `Re: ${entry.date.toDateString()} — "${reply.trim()}"`,
+      recipient:     entry.intern,
+      type:          'required_day_reply',
+      title:         '💬 Your supervisor replied',
+      message:       `Re: ${entry.date.toDateString()} — "${reply.trim()}"`,
+      requiredDayId: entry._id,
     });
 
     res.json(entry);
@@ -209,7 +212,7 @@ const replyToRequiredDay = async (req, res) => {
   }
 };
 
-//DELETE /api/required-days/:id 
+// DELETE /api/required-days/:id 
 // Supervisor: remove a required day assignment
 const deleteRequiredDay = async (req, res) => {
   try {
