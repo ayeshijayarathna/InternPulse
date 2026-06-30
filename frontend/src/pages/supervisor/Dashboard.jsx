@@ -3,7 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import {
   FiActivity, FiUsers, FiCheckSquare, FiFileText,
-  FiLogOut, FiMenu, FiX, FiBell, FiMessageSquare, FiVolume2 
+  FiLogOut, FiMenu, FiX, FiBell, FiMessageSquare, FiVolume2, FiCalendar
 } from 'react-icons/fi';
 
 import { useNotifications }  from '../../context/NotificationContext';
@@ -15,6 +15,7 @@ import SubmissionsPage       from './sections/SubmissionsPage';
 import NotificationsPage     from './sections/supervisor_NotificationsPage';
 import AnnouncementsPage     from './sections/supervisor_AnnouncementsPage';    
 import InquiriesPage         from './sections/supervisor_InquiriesPage';      
+import SupervisorRequiredDaysPage from './sections/SupervisorRequiredDaysPage';
 
 export default function SupervisorDashboard() {
   const { user, logout, setUser }      = useAuth();
@@ -32,6 +33,7 @@ export default function SupervisorDashboard() {
     { id: 'submissions',    label: 'Submissions',     icon: FiFileText      },
     { id: 'inquiries',      label: 'Inquiries',       icon: FiMessageSquare }, 
     { id: 'announcements',  label: 'Announcements',   icon: FiVolume2       }, 
+    { id: 'required-days',  label: 'Required Days',   icon: FiCalendar      },
     { id: 'notifications',  label: 'Notifications',   icon: FiBell, badge: unreadCount },
   ];
 
@@ -43,6 +45,7 @@ export default function SupervisorDashboard() {
       case 'submissions':   return <SubmissionsPage />;
       case 'inquiries':     return <InquiriesPage />;         
       case 'announcements': return <AnnouncementsPage />;     
+      case 'required-days': return <SupervisorRequiredDaysPage />;
       case 'notifications': return <NotificationsPage />;
       default:              return <OverviewPage />;
     }
