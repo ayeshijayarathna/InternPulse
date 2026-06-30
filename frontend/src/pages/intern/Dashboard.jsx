@@ -3,7 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import {
   FiGrid, FiCheckSquare, FiFileText, FiPlusCircle,
-  FiLogOut, FiMenu, FiX, FiBell, FiUser, FiMessageSquare 
+  FiLogOut, FiMenu, FiX, FiBell, FiUser, FiMessageSquare, FiCalendar
 } from 'react-icons/fi';
 
 import { useNotifications }  from '../../context/NotificationContext';
@@ -15,6 +15,7 @@ import OverviewPage          from './sections/OverviewPage';
 import NotificationsPage     from './sections/intern_NotificationsPage';
 import EditProfilePage       from './sections/EditProfilePage';
 import InquiryPage           from './sections/intern_InquiryPage'; 
+import InternRequiredDaysPage from './sections/InternRequiredDaysPage';
 
 export default function InternDashboard() {
   const { user, logout, setUser }         = useAuth();
@@ -31,6 +32,7 @@ export default function InternDashboard() {
     { id: 'submit',        label: 'Submit Update',   icon: FiPlusCircle    },
     { id: 'submissions',   label: 'My Submissions',  icon: FiFileText      },
     { id: 'inquiry',       label: 'My Inquiries',    icon: FiMessageSquare }, 
+    { id: 'required-days', label: 'Required Days',   icon: FiCalendar      },
     { id: 'notifications', label: 'Notifications',   icon: FiBell, badge: unreadCount },
     { id: 'edit-profile',  label: 'Edit Profile',    icon: FiUser          },
   ];
@@ -42,6 +44,7 @@ export default function InternDashboard() {
       case 'submit':        return <SubmitUpdatePage />;
       case 'submissions':   return <MySubmissionsPage />;
       case 'inquiry':       return <InquiryPage />;      
+      case 'required-days': return <InternRequiredDaysPage />;
       case 'notifications': return <NotificationsPage />;
       case 'edit-profile':  return <EditProfilePage />;
       default:              return <OverviewPage setActiveTab={setActiveTab} />;
