@@ -1,23 +1,25 @@
 import { useState } from 'react';
 import {
   FiBell, FiCheckCircle, FiFilter, FiCheck,
-  FiSend, FiUsers, FiMail, FiMessageSquare, 
+  FiSend, FiUsers, FiMail, FiMessageSquare, FiCalendar,
 } from 'react-icons/fi';
 import { useNotifications } from '../../../context/NotificationContext';
 
 // Config 
 const TYPE_META = {
-  submission_received: { icon: '📨', label: 'New Submission', color: '#f97316' },
-  inquiry_received:    { icon: '📩', label: 'New Inquiry',    color: '#6366f1' },
-  announcement:        { icon: '📢', label: 'Announcement',   color: '#f59e0b' }, 
+  submission_received:      { icon: '📨', label: 'New Submission',   color: '#f97316' },
+  inquiry_received:         { icon: '📩', label: 'New Inquiry',      color: '#6366f1' },
+  announcement:             { icon: '📢', label: 'Announcement',     color: '#f59e0b' },
+  required_day_unavailable: { icon: '📅', label: 'Day Unavailable',  color: '#ef4444' },
 };
 
 const FILTERS = [
-  { id: 'all',                 label: 'All'           },
-  { id: 'unread',              label: 'Unread'        },
-  { id: 'submission_received', label: 'Submissions'   },
-  { id: 'inquiry_received',    label: 'Inquiries'     }, 
-  { id: 'announcement',        label: 'Announcements' },
+  { id: 'all',                        label: 'All'           },
+  { id: 'unread',                     label: 'Unread'        },
+  { id: 'submission_received',        label: 'Submissions'   },
+  { id: 'inquiry_received',           label: 'Inquiries'     },
+  { id: 'announcement',               label: 'Announcements' },
+  { id: 'required_day_unavailable',   label: 'Office Days'   }, // ← නව
 ];
 
 function timeAgo(date) {
@@ -38,7 +40,12 @@ export default function SupervisorNotificationsPage() {
   const [filter, setFilter] = useState('all');
 
   // supervisor relevant types only
-  const supervisorTypes = ['submission_received', 'inquiry_received', 'announcement']; 
+  const supervisorTypes = [
+    'submission_received',
+    'inquiry_received',
+    'announcement',
+    'required_day_unavailable',
+  ];
   const supervisorNotifications = notifications.filter(n => supervisorTypes.includes(n.type));
 
   const filtered = supervisorNotifications.filter(n => {
@@ -84,12 +91,13 @@ export default function SupervisorNotificationsPage() {
       </div>
 
       {/* ── Stats row ── */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         {[
-          { label: 'Total',       value: supervisorNotifications.length,                                          icon: FiBell,          color: '#94a3b8' },
-          { label: 'Unread',      value: supervisorUnread,                                                        icon: FiMail,          color: '#f97316' },
-          { label: 'Submissions', value: supervisorNotifications.filter(n=>n.type==='submission_received').length, icon: FiSend,          color: '#22c55e' },
-          { label: 'Inquiries',   value: supervisorNotifications.filter(n=>n.type==='inquiry_received').length,    icon: FiMessageSquare, color: '#6366f1' }, 
+          { label: 'Total',       value: supervisorNotifications.length,                                                icon: FiBell,          color: '#94a3b8' },
+          { label: 'Unread',      value: supervisorUnread,                                                              icon: FiMail,          color: '#f97316' },
+          { label: 'Submissions', value: supervisorNotifications.filter(n=>n.type==='submission_received').length,      icon: FiSend,          color: '#22c55e' },
+          { label: 'Inquiries',   value: supervisorNotifications.filter(n=>n.type==='inquiry_received').length,         icon: FiMessageSquare, color: '#6366f1' },
+          { label: 'Office Days', value: supervisorNotifications.filter(n=>n.type==='required_day_unavailable').length, icon: FiCalendar,      color: '#ef4444' },
         ].map((s, i) => (
           <div
             key={i}
