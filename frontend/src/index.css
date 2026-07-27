@@ -78,3 +78,32 @@ body {
 
 /* ── Focus ring ─────────────────────────────────────────────────── */
 :focus-visible { outline: 2px solid var(--intern-primary); outline-offset: 2px; }
+
+/* ── Light Theme ──────────────────────────────────────────────── */
+[data-theme="light"] {
+  --bg-base:    #f5f6fa;
+  --bg-surface: #ffffff;
+  --bg-card:    #ffffff;
+  --bg-card-2:  #f0f1f5;
+
+  --border:       rgba(0,0,0,0.08);
+  --border-focus: rgba(124,58,237,0.50);
+
+  --text-primary:   #1a1a2e;
+  --text-secondary: #4a5568;
+  --text-muted:     #a0aec0;
+
+  --intern-glow: #7c3aed44;
+  --admin-glow:  #f59e0b44;
+}
+
+[data-theme="light"] body {
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+}
+
+[data-theme="light"] ::-webkit-scrollbar-track { background: var(--bg-base); }
+[data-theme="light"] ::-webkit-scrollbar-thumb { background: #c1c9d6; }
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover { background: #a0aab8; }
+
+[data-theme="light"] ::selection { background: rgba(124,58,237,0.2); color: #1a1a2e; }

@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider }             from './context/AuthContext';
 import { NotificationProvider }     from './context/NotificationContext';
+import { ThemeProvider }            from './context/ThemeContext';
 import ProtectedRoute               from './components/common/ProtectedRoute';
 
 import InternLogin      from './pages/auth/Internlogin';
@@ -13,6 +14,7 @@ import SuperAdminDashboard  from './pages/superadmin/Dashboard';
 
 export default function App() {
   return (
+    <ThemeProvider>
     <AuthProvider>
       <NotificationProvider>
         <BrowserRouter>
@@ -57,5 +59,6 @@ export default function App() {
         </BrowserRouter>
       </NotificationProvider>
     </AuthProvider>
+    </ThemeProvider>
   );
 }
