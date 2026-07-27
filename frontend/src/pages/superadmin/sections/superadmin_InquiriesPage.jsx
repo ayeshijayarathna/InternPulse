@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import {
-  FiMessageSquare, FiSend, FiChevronDown, FiChevronUp, FiX, FiPlus, FiUser
+  FiMessageSquare, FiSend, FiChevronDown, FiChevronUp, FiX, FiPlus, FiUser,
+  FiCheck, FiAlertCircle
 } from 'react-icons/fi';
 import axiosInstance from '../../../api/axiosInstance';
 
@@ -14,6 +15,7 @@ export default function SuperAdminInquiriesPage() {
   const [form, setForm] = useState({ subject: '', message: '', supervisorId: '' });
   const [replyText, setReplyText] = useState({});
   const [sending, setSending] = useState(false);
+  const [toast, setToast] = useState(null);
 
   const fetchData = async () => {
     try {
@@ -37,7 +39,12 @@ export default function SuperAdminInquiriesPage() {
       setForm({ subject: '', message: '', supervisorId: '' });
       setShowForm(false);
       fetchData();
-    } catch {} finally { setSending(false); }
+      setToast({ type: 'success', msg: 'Inquiry sent successfully!' });
+      setTimeout(() => setToast(null), 3000);
+    } catch (err) {
+      setToast({ type: 'error', msg: err.response?.data?.message || 'Failed to send inquiry' });
+      setTimeout(() => setToast(null), 3000);
+    } finally { setSending(false); }
   };
 
   const handleReply = async (id) => {
@@ -47,7 +54,12 @@ export default function SuperAdminInquiriesPage() {
       const res = await axiosInstance.post(`/inquiries/admin/${id}/reply`, { message: text });
       setInquiries(prev => prev.map(i => i._id === id ? res.data : i));
       setReplyText(prev => ({ ...prev, [id]: '' }));
-    } catch {}
+      setToast({ type: 'success', msg: 'Reply sent! Supervisor has been notified.' });
+      setTimeout(() => setToast(null), 3000);
+    } catch (err) {
+      setToast({ type: 'error', msg: err.response?.data?.message || 'Reply failed' });
+      setTimeout(() => setToast(null), 3000);
+    }
   };
 
   const handleClose = async (id) => {
@@ -75,6 +87,20 @@ export default function SuperAdminInquiriesPage() {
 
   return (
     <div className="space-y-6">
+
+      {/* Toast */}
+      {toast && (
+        <div className="fixed top-6 right-6 z-50 flex items-center gap-2 px-4 py-3 rounded-xl border text-sm font-semibold shadow-lg backdrop-blur-sm transition-all"
+             style={{
+               background: toast.type === 'success' ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)',
+               borderColor: toast.type === 'success' ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)',
+               color: toast.type === 'success' ? '#22c55e' : '#ef4444',
+             }}>
+          {toast.type === 'success' ? <FiCheck className="w-4 h-4" /> : <FiAlertCircle className="w-4 h-4" />}
+          {toast.msg}
+        </div>
+      )}
+
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h2 className="text-2xl font-bold" style={{ fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}>

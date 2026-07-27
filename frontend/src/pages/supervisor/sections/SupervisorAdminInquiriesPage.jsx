@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import {
-  FiMessageSquare, FiSend, FiChevronDown, FiChevronUp, FiPlus, FiX, FiShield
+  FiMessageSquare, FiSend, FiChevronDown, FiChevronUp, FiPlus, FiX, FiShield,
+  FiCheck, FiAlertCircle
 } from 'react-icons/fi';
 import axiosInstance from '../../../api/axiosInstance';
 
@@ -13,6 +14,7 @@ export default function SupervisorAdminInquiriesPage() {
   const [form, setForm] = useState({ subject: '', message: '' });
   const [replyText, setReplyText] = useState({});
   const [sending, setSending] = useState(false);
+  const [toast, setToast] = useState(null);
 
   const fetchData = async () => {
     try {
@@ -28,14 +30,19 @@ export default function SupervisorAdminInquiriesPage() {
     if (!form.subject || !form.message) return;
     setSending(true);
     try {
-      await axiosInstance.post('/inquiries', {
+      await axiosInstance.post('/inquiries/admin/from-supervisor', {
         subject: form.subject,
-        message: `[TO SUPER ADMIN] ${form.message}`,
+        message: form.message,
       });
       setForm({ subject: '', message: '' });
       setShowForm(false);
       fetchData();
-    } catch {} finally { setSending(false); }
+      setToast({ type: 'success', msg: 'Inquiry sent to Super Admin successfully!' });
+      setTimeout(() => setToast(null), 3000);
+    } catch (err) {
+      setToast({ type: 'error', msg: err.response?.data?.message || 'Failed to send inquiry' });
+      setTimeout(() => setToast(null), 3000);
+    } finally { setSending(false); }
   };
 
   const handleReply = async (id) => {
@@ -45,7 +52,12 @@ export default function SupervisorAdminInquiriesPage() {
       const res = await axiosInstance.post(`/inquiries/admin/${id}/reply`, { message: text });
       setInquiries(prev => prev.map(i => i._id === id ? res.data : i));
       setReplyText(prev => ({ ...prev, [id]: '' }));
-    } catch {}
+      setToast({ type: 'success', msg: 'Reply sent!' });
+      setTimeout(() => setToast(null), 3000);
+    } catch (err) {
+      setToast({ type: 'error', msg: err.response?.data?.message || 'Reply failed' });
+      setTimeout(() => setToast(null), 3000);
+    }
   };
 
   const filtered = inquiries.filter(i => filter === 'all' || i.status === filter);
@@ -60,12 +72,26 @@ export default function SupervisorAdminInquiriesPage() {
   if (loading) return (
     <div className="flex items-center justify-center h-64">
       <div className="w-8 h-8 rounded-full border-2 animate-spin"
-           style={{ borderColor: 'var(--admin-primary)', borderTopColor: 'transparent' }} />
+           style={{ borderColor: 'var(--supervisor-primary)', borderTopColor: 'transparent' }} />
     </div>
   );
 
   return (
     <div className="space-y-6">
+
+      {/* Toast */}
+      {toast && (
+        <div className="fixed top-6 right-6 z-50 flex items-center gap-2 px-4 py-3 rounded-xl border text-sm font-semibold shadow-lg backdrop-blur-sm transition-all"
+             style={{
+               background: toast.type === 'success' ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)',
+               borderColor: toast.type === 'success' ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)',
+               color: toast.type === 'success' ? '#22c55e' : '#ef4444',
+             }}>
+          {toast.type === 'success' ? <FiCheck className="w-4 h-4" /> : <FiAlertCircle className="w-4 h-4" />}
+          {toast.msg}
+        </div>
+      )}
+
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h2 className="text-2xl font-bold" style={{ fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}>
@@ -76,8 +102,8 @@ export default function SupervisorAdminInquiriesPage() {
           </p>
         </div>
         <button onClick={() => setShowForm(!showForm)}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-black transition-all hover:scale-105"
-                style={{ background: 'linear-gradient(135deg, var(--admin-primary), var(--admin-secondary))' }}>
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-white transition-all hover:scale-105"
+                style={{ background: 'linear-gradient(135deg, var(--supervisor-primary), var(--supervisor-secondary))' }}>
           {showForm ? <FiX className="w-4 h-4" /> : <FiPlus className="w-4 h-4" />}
           {showForm ? 'Cancel' : 'New Inquiry'}
         </button>
@@ -112,8 +138,8 @@ export default function SupervisorAdminInquiriesPage() {
                       style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }} />
           </div>
           <button type="submit" disabled={sending}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-black transition-all hover:scale-105 disabled:opacity-50"
-                  style={{ background: 'linear-gradient(135deg, var(--admin-primary), var(--admin-secondary))' }}>
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:scale-105 disabled:opacity-50"
+                  style={{ background: 'linear-gradient(135deg, var(--supervisor-primary), var(--supervisor-secondary))' }}>
             <FiSend className="w-4 h-4" /> {sending ? 'Sending...' : 'Send Inquiry'}
           </button>
         </form>
@@ -125,7 +151,7 @@ export default function SupervisorAdminInquiriesPage() {
           <button key={f} onClick={() => setFilter(f)}
                   className="px-4 py-2 rounded-xl text-xs font-semibold transition-all"
                   style={{
-                    background: filter === f ? 'linear-gradient(135deg, var(--admin-primary), var(--admin-secondary))' : 'var(--bg-card)',
+                    background: filter === f ? 'linear-gradient(135deg, var(--supervisor-primary), var(--supervisor-secondary))' : 'var(--bg-card)',
                     color: filter === f ? '#000' : 'var(--text-secondary)',
                     border: `1px solid ${filter === f ? 'transparent' : 'var(--border)'}`,
                   }}>
@@ -150,7 +176,7 @@ export default function SupervisorAdminInquiriesPage() {
               <button onClick={() => setExpandedId(isOpen ? null : inq._id)}
                       className="w-full px-5 py-4 flex items-center gap-4 text-left hover:bg-white/5 transition-all">
                 <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
-                     style={{ background: 'linear-gradient(135deg, #dc2626, #b91c1c)' }}>
+                     style={{ background: 'linear-gradient(135deg, var(--supervisor-primary), var(--supervisor-secondary))' }}>
                   <FiShield className="w-5 h-5 text-white" />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -216,8 +242,8 @@ export default function SupervisorAdminInquiriesPage() {
                              className="flex-1 px-4 py-2.5 rounded-xl text-sm outline-none"
                              style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }} />
                       <button onClick={() => handleReply(inq._id)}
-                              className="px-4 py-2.5 rounded-xl text-sm font-semibold text-black transition-all hover:scale-105"
-                              style={{ background: 'linear-gradient(135deg, var(--admin-primary), var(--admin-secondary))' }}>
+                              className="px-4 py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:scale-105"
+                              style={{ background: 'linear-gradient(135deg, var(--supervisor-primary), var(--supervisor-secondary))' }}>
                         <FiSend className="w-4 h-4" />
                       </button>
                     </div>

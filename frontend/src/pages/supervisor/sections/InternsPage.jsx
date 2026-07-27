@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import {
   FiUsers, FiUserPlus, FiUserCheck, FiUserX,
   FiMail, FiCalendar, FiEdit2, FiTrash2,
   FiX, FiRefreshCw, FiSearch, FiDownload,
   FiEye, FiEyeOff, FiCopy, FiCheck, FiShield,
-  FiMapPin, FiBook, FiFileText, FiUser, FiCheckCircle, FiGithub
+  FiMapPin, FiBook, FiFileText, FiUser, FiCheckCircle, FiGithub,
+  FiAlertCircle
 } from 'react-icons/fi';
 import axiosInstance from '../../../api/axiosInstance';
 
@@ -160,8 +161,8 @@ function CredentialsModal({ credentials, onClose }) {
           </div>
         </div>
 
-        <button onClick={onClose} className="w-full py-2.5 rounded-xl font-semibold text-sm"
-                style={{ background: 'linear-gradient(135deg,#f59e0b,#d97706)', color: '#000' }}>
+        <button onClick={onClose} className="w-full py-2.5 rounded-xl font-semibold text-sm text-white"
+                style={{ background: 'linear-gradient(135deg,var(--supervisor-primary),var(--supervisor-secondary))' }}>
           Done — I've saved the credentials
         </button>
       </div>
@@ -169,9 +170,10 @@ function CredentialsModal({ credentials, onClose }) {
   );
 }
 
-// Intern Profile Modal (supervisor view) 
+// Intern Profile Modal (supervisor view) — compact two-column layout
 function InternProfileModal({ intern, onClose }) {
   const [cvDownloading, setCvDownloading] = useState(false);
+  const [toast, setToast] = useState(null);
 
   const handleDownloadCV = async () => {
     setCvDownloading(true);
@@ -192,44 +194,65 @@ function InternProfileModal({ intern, onClose }) {
       a.remove();
       window.URL.revokeObjectURL(blobUrl);
     } catch {
-      alert('CV download failed or no CV uploaded yet.');
+      setToast({ type: 'error', msg: 'CV download failed or no CV uploaded yet.' });
+      setTimeout(() => setToast(null), 3000);
     } finally {
       setCvDownloading(false);
     }
   };
 
-  const fmt = (d) => d ? new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : '—';
+  const fmt = (d) => d ? new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '—';
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
-      <div className="w-full max-w-md rounded-2xl overflow-hidden"
-           style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
-        <div className="p-5 border-b flex items-center justify-between"
-             style={{ borderColor: 'var(--border)', background: 'linear-gradient(135deg,rgba(249,115,22,0.08),rgba(251,146,60,0.04))' }}>
-          <div className="flex items-center gap-3">
-            <FiUser className="w-5 h-5" style={{ color: 'var(--admin-primary)' }} />
-            <h3 className="font-bold text-white" style={{ fontFamily: 'var(--font-display)' }}>Intern Profile</h3>
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[60] p-4"
+         onClick={onClose}>
+      {toast && (
+        <div className="fixed top-6 right-6 z-[70] flex items-center gap-2 px-4 py-3 rounded-xl border text-sm font-semibold shadow-lg backdrop-blur-sm transition-all"
+             style={{
+               background: toast.type === 'success' ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)',
+               borderColor: toast.type === 'success' ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)',
+               color: toast.type === 'success' ? '#22c55e' : '#ef4444',
+             }}>
+          {toast.type === 'success' ? <FiCheck className="w-4 h-4" /> : <FiAlertCircle className="w-4 h-4" />}
+          {toast.msg}
+        </div>
+      )}
+      <div className="w-full max-w-lg rounded-2xl overflow-hidden"
+           style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}
+           onClick={e => e.stopPropagation()}>
+
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-3"
+             style={{ background: 'linear-gradient(135deg,rgba(249,115,22,0.1),rgba(251,146,60,0.05))', borderBottom: '1px solid var(--border)' }}>
+          <div className="flex items-center gap-2">
+            <FiUser className="w-4 h-4" style={{ color: 'var(--supervisor-primary)' }} />
+            <h3 className="font-bold text-white text-sm" style={{ fontFamily: 'var(--font-display)' }}>Intern Profile</h3>
           </div>
-          <button onClick={onClose} className="p-1 rounded-lg hover:bg-white/5" style={{ color: 'var(--text-secondary)' }}>
-            <FiX className="w-5 h-5" />
+          <button onClick={onClose}
+                  className="p-1.5 rounded-lg hover:bg-white/10 transition-all"
+                  style={{ color: 'var(--text-secondary)' }}>
+            <FiX className="w-4 h-4" />
           </button>
         </div>
 
-        <div className="p-6 space-y-5">
-          <div className="flex items-center gap-4">
+        {/* Body — two columns */}
+        <div className="flex">
+          {/* Left column — avatar + name + status */}
+          <div className="w-36 shrink-0 flex flex-col items-center text-center p-5 space-y-3"
+               style={{ borderRight: '1px solid var(--border)' }}>
             {intern.avatar?.url
               ? <img src={intern.avatar.url} alt={intern.name}
-                     className="w-16 h-16 rounded-2xl object-cover border-2"
-                     style={{ borderColor: 'var(--admin-primary)' }} />
+                     className="w-16 h-16 rounded-xl object-cover border-2"
+                     style={{ borderColor: 'var(--supervisor-primary)' }} />
               : (
-                <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-bold text-white"
-                     style={{ background: 'linear-gradient(135deg,var(--admin-primary),var(--admin-secondary))' }}>
+                <div className="w-16 h-16 rounded-xl flex items-center justify-center text-xl font-bold text-white"
+                     style={{ background: 'linear-gradient(135deg,var(--supervisor-primary),var(--supervisor-secondary))' }}>
                   {intern.name?.charAt(0).toUpperCase()}
                 </div>
               )}
             <div>
-              <h4 className="text-lg font-bold text-white">{intern.name}</h4>
-              <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
+              <h4 className="text-sm font-bold text-white leading-tight">{intern.name}</h4>
+              <span className="inline-block mt-1 text-[10px] px-2 py-0.5 rounded-full font-semibold"
                     style={{
                       background: intern.isActive ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)',
                       color:      intern.isActive ? '#22c55e' : '#ef4444',
@@ -237,62 +260,87 @@ function InternProfileModal({ intern, onClose }) {
                 {intern.isActive ? 'Active' : 'Inactive'}
               </span>
             </div>
-          </div>
-
-          <div className="space-y-3">
-            {[
-              { icon: FiMail,     label: 'Email',            value: intern.email },
-              { icon: FiBook,     label: 'University',       value: intern.university || '—' },
-              { icon: FiMapPin,   label: 'Hometown',         value: intern.hometown   || '—' },
-              ...(intern.githubUsername ? [{ icon: FiGithub, label: 'GitHub', value: `@${intern.githubUsername}`, href: `https://github.com/${intern.githubUsername}` }] : []),
-              { icon: FiCalendar, label: 'Internship Start', value: fmt(intern.internshipStart) },
-              { icon: FiCalendar, label: 'Internship End',   value: fmt(intern.internshipEnd)   },
-              { icon: FiCalendar, label: 'Joined',           value: fmt(intern.createdAt) },
-            ].map(row => (
-              <div key={row.label} className="flex items-start gap-3 px-4 py-3 rounded-xl"
-                   style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)' }}>
-                <row.icon className="w-4 h-4 mt-0.5 shrink-0" style={{ color: 'var(--admin-primary)' }} />
-                <div>
-                  <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>{row.label}</div>
-                  {row.href ? (
-                    <a href={row.href} target="_blank" rel="noopener noreferrer"
-                       className="text-sm font-semibold hover:underline" style={{ color: '#60a5fa' }}>
-                      {row.value}
-                    </a>
-                  ) : (
-                    <div className="text-sm font-semibold text-white">{row.value}</div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="px-4 py-3 rounded-xl flex items-center justify-between gap-3"
-               style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)' }}>
-            <div className="flex items-center gap-3">
-              <FiFileText className="w-4 h-4 shrink-0" style={{ color: 'var(--admin-primary)' }} />
-              <div>
-                <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>CV / Resume</div>
-                <div className="text-sm font-semibold text-white">
-                  {intern.cv?.originalName || 'No CV uploaded'}
-                </div>
-                {intern.cv?.fileSize && (
-                  <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>
-                    {(intern.cv.fileSize / 1024).toFixed(1)} KB
-                  </div>
-                )}
-              </div>
-            </div>
-            {intern.cv?.filename && (
-              <button onClick={handleDownloadCV} disabled={cvDownloading}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:opacity-80 disabled:opacity-50"
-                      style={{ background: 'rgba(249,115,22,0.15)', color: 'var(--admin-primary)', border: '1px solid rgba(249,115,22,0.3)' }}>
-                <FiDownload className="w-3.5 h-3.5" />
-                {cvDownloading ? 'Downloading…' : 'Download'}
-              </button>
+            {intern.githubUsername && (
+              <a href={`https://github.com/${intern.githubUsername}`} target="_blank" rel="noopener noreferrer"
+                 className="flex items-center gap-1 text-[11px] hover:underline"
+                 style={{ color: '#60a5fa' }}>
+                <FiGithub className="w-3 h-3" />@{intern.githubUsername}
+              </a>
             )}
           </div>
+
+          {/* Right column — details */}
+          <div className="flex-1 p-5 space-y-3 min-w-0">
+            {/* Row 1: Email */}
+            <InfoRow icon={FiMail} label="Email" value={intern.email} />
+
+            {/* Row 2: University + Hometown side by side */}
+            <div className="grid grid-cols-2 gap-2">
+              <InfoRow icon={FiBook}   label="University" value={intern.university || '—'} />
+              <InfoRow icon={FiMapPin} label="Hometown"   value={intern.hometown   || '—'} />
+            </div>
+
+            {/* Row 3: Dates side by side */}
+            <div className="grid grid-cols-2 gap-2">
+              <InfoRow icon={FiCalendar} label="Start" value={fmt(intern.internshipStart)} />
+              <InfoRow icon={FiCalendar} label="End"   value={fmt(intern.internshipEnd)} />
+            </div>
+
+            {/* Row 4: Joined */}
+            <InfoRow icon={FiCalendar} label="Joined" value={fmt(intern.createdAt)} />
+
+            {/* CV */}
+            <div className="flex items-center justify-between px-3 py-2 rounded-lg"
+                 style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)' }}>
+              <div className="flex items-center gap-2 min-w-0">
+                <FiFileText className="w-3.5 h-3.5 shrink-0" style={{ color: 'var(--supervisor-primary)' }} />
+                <div className="min-w-0">
+                  <div className="text-[10px] font-semibold" style={{ color: 'var(--text-muted)' }}>CV</div>
+                  <div className="text-xs font-semibold text-white truncate">
+                    {intern.cv?.originalName || 'No CV'}
+                  </div>
+                </div>
+              </div>
+              {intern.cv?.filename && (
+                <button onClick={handleDownloadCV} disabled={cvDownloading}
+                        className="shrink-0 flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-semibold transition-all hover:opacity-80 disabled:opacity-50"
+                        style={{ background: 'rgba(249,115,22,0.12)', color: 'var(--supervisor-primary)' }}>
+                  <FiDownload className="w-3 h-3" />
+                  {cvDownloading ? '...' : 'Download'}
+                </button>
+              )}
+            </div>
+          </div>
         </div>
+
+        {/* Footer close */}
+        <div className="px-5 py-3 flex justify-end" style={{ borderTop: '1px solid var(--border)' }}>
+          <button onClick={onClose}
+                  className="px-4 py-1.5 rounded-lg text-xs font-semibold transition-all hover:bg-white/5"
+                  style={{ border: '1px solid var(--border)', color: 'var(--text-secondary)' }}>
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function InfoRow({ icon: Icon, label, value, href }) {
+  return (
+    <div className="flex items-center gap-2 px-3 py-2 rounded-lg"
+         style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)' }}>
+      <Icon className="w-3.5 h-3.5 shrink-0" style={{ color: 'var(--supervisor-primary)' }} />
+      <div className="min-w-0">
+        <div className="text-[10px] font-semibold" style={{ color: 'var(--text-muted)' }}>{label}</div>
+        {href ? (
+          <a href={href} target="_blank" rel="noopener noreferrer"
+             className="text-xs font-semibold hover:underline" style={{ color: '#60a5fa' }}>
+            {value}
+          </a>
+        ) : (
+          <div className="text-xs font-semibold text-white truncate">{value}</div>
+        )}
       </div>
     </div>
   );
@@ -314,6 +362,7 @@ export default function InternsPage() {
   const [actionLoading, setActionLoading] = useState(null);
   const [credentials,   setCredentials]   = useState(null);
   const [viewIntern,    setViewIntern]    = useState(null);
+  const [toast, setToast] = useState(null);
 
   useEffect(() => { fetchInterns(); }, []);
 
@@ -385,24 +434,41 @@ export default function InternsPage() {
     if (!window.confirm(`${current ? 'Deactivate' : 'Activate'} this intern?`)) return;
     setActionLoading(internId);
     try { await axiosInstance.patch(`/users/intern/${internId}/toggle`); fetchInterns(); }
-    catch { } finally { setActionLoading(null); }
+    catch {
+      setToast({ type: 'error', msg: 'Failed to update intern status' });
+      setTimeout(() => setToast(null), 3000);
+    } finally { setActionLoading(null); }
   };
 
   const handleDelete = async () => {
     setDeleteLoading(true);
     try { await axiosInstance.delete(`/users/intern/${deleteTarget._id}`); setDeleteTarget(null); fetchInterns(); }
-    catch { } finally { setDeleteLoading(false); }
+    catch {
+      setToast({ type: 'error', msg: 'Failed to delete intern' });
+      setTimeout(() => setToast(null), 3000);
+    } finally { setDeleteLoading(false); }
   };
 
   if (loading) return (
     <div className="flex items-center justify-center h-64">
       <div className="w-8 h-8 rounded-full border-2 animate-spin"
-           style={{ borderColor: 'var(--admin-primary)', borderTopColor: 'transparent' }} />
+           style={{ borderColor: 'var(--supervisor-primary)', borderTopColor: 'transparent' }} />
     </div>
   );
 
   return (
     <div className="space-y-6">
+      {toast && (
+        <div className="fixed top-6 right-6 z-50 flex items-center gap-2 px-4 py-3 rounded-xl border text-sm font-semibold shadow-lg backdrop-blur-sm transition-all"
+             style={{
+               background: toast.type === 'success' ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)',
+               borderColor: toast.type === 'success' ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)',
+               color: toast.type === 'success' ? '#22c55e' : '#ef4444',
+             }}>
+          {toast.type === 'success' ? <FiCheck className="w-4 h-4" /> : <FiAlertCircle className="w-4 h-4" />}
+          {toast.msg}
+        </div>
+      )}
 
       {credentials && <CredentialsModal credentials={credentials} onClose={() => setCredentials(null)} />}
       {viewIntern  && <InternProfileModal intern={viewIntern}     onClose={() => setViewIntern(null)}  />}
@@ -411,7 +477,7 @@ export default function InternsPage() {
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-2xl flex items-center justify-center"
-               style={{ background: 'linear-gradient(135deg,var(--admin-primary),var(--admin-secondary))' }}>
+               style={{ background: 'linear-gradient(135deg,var(--supervisor-primary),var(--supervisor-secondary))' }}>
             <FiUsers className="w-6 h-6 text-white" />
           </div>
           <div>
@@ -431,15 +497,15 @@ export default function InternsPage() {
           </div>
           <button onClick={() => downloadInternsPDF('My Interns', interns)}
                   className="flex items-center gap-2 px-3 py-2 rounded-xl font-semibold text-sm hover:opacity-90"
-                  style={{ background: 'rgba(245,158,11,0.1)', color: 'var(--admin-primary)', border: '1px solid rgba(245,158,11,0.25)' }}>
+                  style={{ background: 'rgba(245,158,11,0.1)', color: 'var(--supervisor-primary)', border: '1px solid rgba(245,158,11,0.25)' }}>
             <FiDownload className="w-4 h-4" /> PDF
           </button>
           <button onClick={fetchInterns} className="p-2 rounded-xl border hover:bg-white/5" style={{ borderColor: 'var(--border)' }}>
             <FiRefreshCw className="w-4 h-4" style={{ color: 'var(--text-secondary)' }} />
           </button>
           <button onClick={openCreate}
-                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm transition-all hover:scale-105"
-                  style={{ background: 'linear-gradient(135deg,var(--admin-primary),var(--admin-secondary))', color: '#000' }}>
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm text-white transition-all hover:scale-105"
+                  style={{ background: 'linear-gradient(135deg,var(--supervisor-primary),var(--supervisor-secondary))' }}>
             <FiUserPlus className="w-4 h-4" /> Add Intern
           </button>
         </div>
@@ -459,7 +525,7 @@ export default function InternsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filtered.map((intern) => (
             <div key={intern._id}
-                 className="relative p-5 rounded-2xl border transition-all hover:border-[var(--admin-primary)]"
+                 className="relative p-5 rounded-2xl border transition-all hover:border-[var(--supervisor-primary)]"
                  style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
               <div className="absolute top-4 right-4">
                 <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold"
@@ -476,10 +542,10 @@ export default function InternsPage() {
                 {intern.avatar?.url
                   ? <img src={intern.avatar.url} alt={intern.name}
                          className="w-20 h-20 rounded-full object-cover mb-3 border-2"
-                         style={{ borderColor: 'var(--admin-primary)' }} />
+                         style={{ borderColor: 'var(--supervisor-primary)' }} />
                   : (
                     <div className="w-20 h-20 rounded-full flex items-center justify-center mb-3 text-2xl font-bold text-white"
-                         style={{ background: 'linear-gradient(135deg,var(--admin-primary),var(--admin-secondary))' }}>
+                         style={{ background: 'linear-gradient(135deg,var(--supervisor-primary),var(--supervisor-secondary))' }}>
                       {intern.name.charAt(0).toUpperCase()}
                     </div>
                   )}
@@ -647,8 +713,8 @@ export default function InternsPage() {
                   Cancel
                 </button>
                 <button type="submit" disabled={formLoading}
-                        className="flex-1 py-2.5 rounded-xl font-semibold text-sm disabled:opacity-50"
-                        style={{ background: 'linear-gradient(135deg,var(--admin-primary),var(--admin-secondary))', color: '#000' }}>
+                        className="flex-1 py-2.5 rounded-xl font-semibold text-sm text-white disabled:opacity-50"
+                        style={{ background: 'linear-gradient(135deg,var(--supervisor-primary),var(--supervisor-secondary))' }}>
                   {formLoading ? 'Saving…' : modal === 'create' ? 'Create Intern' : 'Save Changes'}
                 </button>
               </div>
@@ -680,7 +746,7 @@ export default function InternsPage() {
               </button>
               <button onClick={handleDelete} disabled={deleteLoading}
                       className="flex-1 py-2.5 rounded-xl font-semibold text-sm text-white"
-                      style={{ background: 'linear-gradient(135deg,#dc2626,#b91c1c)' }}>
+                      style={{ background: 'linear-gradient(135deg,var(--supervisor-primary),var(--supervisor-secondary))' }}>
                 {deleteLoading ? 'Deleting…' : 'Delete'}
               </button>
             </div>

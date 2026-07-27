@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import {
   FiMessageSquare, FiPlus, FiSend, FiX, FiTrash2,
-  FiEdit2, FiRefreshCw, FiClock, FiCheckCircle, FiChevronDown, FiChevronUp
+  FiEdit2, FiRefreshCw, FiClock, FiCheckCircle, FiChevronDown, FiChevronUp,
+  FiCheck, FiAlertCircle
 } from 'react-icons/fi';
 import axiosInstance from '../../../api/axiosInstance';
 
@@ -34,6 +35,7 @@ export default function InternInquiryPage() {
   const [saving,     setSaving]     = useState(false);
   const [formError,  setFormError]  = useState('');
   const [deleting,   setDeleting]   = useState(null);
+  const [toast, setToast] = useState(null);
 
   const fetch = async () => {
     setLoading(true);
@@ -77,7 +79,8 @@ export default function InternInquiryPage() {
       await axiosInstance.delete(`/inquiries/${inq._id}`);
       setInquiries(prev => prev.filter(i => i._id !== inq._id));
     } catch (err) {
-      alert(err.response?.data?.message || 'Delete failed');
+      setToast({ type: 'error', msg: err.response?.data?.message || 'Delete failed' });
+      setTimeout(() => setToast(null), 3000);
     } finally {
       setDeleting(null);
     }
@@ -92,6 +95,17 @@ export default function InternInquiryPage() {
 
   return (
     <div className="space-y-6">
+      {toast && (
+        <div className="fixed top-6 right-6 z-50 flex items-center gap-2 px-4 py-3 rounded-xl border text-sm font-semibold shadow-lg backdrop-blur-sm transition-all"
+             style={{
+               background: toast.type === 'success' ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)',
+               borderColor: toast.type === 'success' ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)',
+               color: toast.type === 'success' ? '#22c55e' : '#ef4444',
+             }}>
+          {toast.type === 'success' ? <FiCheck className="w-4 h-4" /> : <FiAlertCircle className="w-4 h-4" />}
+          {toast.msg}
+        </div>
+      )}
 
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">

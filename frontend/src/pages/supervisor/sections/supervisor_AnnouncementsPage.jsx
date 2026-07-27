@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { FiBell, FiRefreshCw, FiClock } from 'react-icons/fi';
 import axiosInstance from '../../../api/axiosInstance';
 
@@ -37,7 +37,7 @@ export default function SupervisorAnnouncementsPage() {
   if (loading) return (
     <div className="flex items-center justify-center h-64">
       <div className="w-8 h-8 rounded-full border-2 animate-spin"
-           style={{ borderColor: 'var(--admin-primary)', borderTopColor: 'transparent' }} />
+           style={{ borderColor: 'var(--supervisor-primary)', borderTopColor: 'transparent' }} />
     </div>
   );
 
@@ -48,8 +48,8 @@ export default function SupervisorAnnouncementsPage() {
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-2xl flex items-center justify-center"
-               style={{ background: 'linear-gradient(135deg,var(--admin-primary),var(--admin-secondary))' }}>
-            <FiBell className="w-6 h-6 text-black" />
+               style={{ background: 'linear-gradient(135deg,var(--supervisor-primary),var(--supervisor-secondary))' }}>
+            <FiBell className="w-6 h-6 text-white" />
           </div>
           <div>
             <h2 className="text-2xl font-bold text-white" style={{ fontFamily: 'var(--font-display)' }}>
