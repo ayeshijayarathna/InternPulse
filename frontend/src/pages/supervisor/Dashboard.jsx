@@ -9,7 +9,8 @@ import {
 
 import { useNotifications }  from '../../context/NotificationContext';
 import { useTheme }          from '../../context/ThemeContext';
-import AvatarUpload          from '../../components/common/AvatarUpload';
+import AvatarUpload from '../../components/common/AvatarUpload';
+
 import OverviewPage          from './sections/OverviewPage';
 import InternsPage           from './sections/InternsPage';
 import TasksPage             from './sections/TasksPage';
@@ -44,16 +45,16 @@ export default function SupervisorDashboard() {
 
   const renderContent = () => {
     switch (activeTab) {
-      case 'overview':      return <OverviewPage />;
-      case 'interns':       return <InternsPage />;
-      case 'tasks':         return <TasksPage />;
-      case 'submissions':   return <SubmissionsPage />;
+      case 'overview':       return <OverviewPage />;
+      case 'interns':        return <InternsPage />;
+      case 'tasks':          return <TasksPage />;
+      case 'submissions':    return <SubmissionsPage />;
       case 'inquiries':      return <InquiriesPage />;
       case 'admin-inquiries': return <AdminInquiriesPage />;
       case 'announcements':  return <AnnouncementsPage />;
-      case 'required-days': return <SupervisorRequiredDaysPage />;
-      case 'notifications': return <NotificationsPage />;
-      default:              return <OverviewPage />;
+      case 'required-days':  return <SupervisorRequiredDaysPage />;
+      case 'notifications':  return <NotificationsPage />;
+      default:               return <OverviewPage />;
     }
   };
 
@@ -68,24 +69,12 @@ export default function SupervisorDashboard() {
             <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 rounded-lg hover:bg-white/5">
               {sidebarOpen ? <FiX className="w-5 h-5" style={{ color: 'var(--text-primary)' }} /> : <FiMenu className="w-5 h-5" style={{ color: 'var(--text-primary)' }} />}
             </button>
-            <h1 className="text-lg font-bold" style={{ fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}>
-              InternPulse
-            </h1>
+            <h1 className="text-lg font-bold" style={{ fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}>InternPulse</h1>
           </div>
           <div className="flex items-center gap-2">
             <button onClick={toggleTheme} className="p-2 rounded-xl hover:bg-white/5 transition-all"
                     style={{ color: 'var(--text-secondary)' }}>
               {theme === 'dark' ? <FiSun className="w-5 h-5" /> : <FiMoon className="w-5 h-5" />}
-            </button>
-            <button onClick={() => { setActiveTab('notifications'); setSidebarOpen(false); }}
-                    className="relative p-2 rounded-xl hover:bg-white/5 transition-all">
-              <FiBell className="w-5 h-5" style={{ color: 'var(--text-primary)' }} />
-              {unreadCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] rounded-full flex items-center justify-center text-[10px] font-bold text-black"
-                      style={{ background: 'var(--admin-primary)', padding: '0 4px' }}>
-                  {unreadCount > 99 ? '99+' : unreadCount}
-                </span>
-              )}
             </button>
             <AvatarUpload
               user={user} size="sm"
@@ -110,7 +99,7 @@ export default function SupervisorDashboard() {
               <p className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>Supervisor Dashboard</p>
             </div>
 
-            {/* Profile */}
+            {/* Profile with notification bell */}
             <div className="p-6 border-b" style={{ borderColor: 'var(--border)' }}>
               <div className="flex items-center gap-3">
                 <AvatarUpload
@@ -120,12 +109,24 @@ export default function SupervisorDashboard() {
                   onUpdate={(updated) => setUser?.(updated)}
                 />
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-bold truncate" style={{ color: 'var(--text-primary)' }}>{user?.name}</div>
+                  <div className="flex items-center gap-2">
+                    <div className="text-sm font-bold truncate" style={{ color: 'var(--text-primary)' }}>{user?.name}</div>
+                    <button onClick={() => setActiveTab('notifications')}
+                            className="relative shrink-0 p-1.5 rounded-lg transition-all hover:bg-white/5">
+                      <FiBell className="w-4 h-4" style={{ color: 'var(--text-secondary)' }} />
+                      {unreadCount > 0 && (
+                        <span className="absolute -top-1 -right-1 min-w-[16px] h-[16px] rounded-full flex items-center justify-center text-[9px] font-bold text-white"
+                              style={{ background: '#dc2626', padding: '0 3px' }}>
+                          {unreadCount > 99 ? '99+' : unreadCount}
+                        </span>
+                      )}
+                    </button>
+                  </div>
                   <div className="text-xs truncate" style={{ color: 'var(--text-secondary)' }}>{user?.email}</div>
                   <div className="mt-1 flex items-center gap-2">
-                    <span className="inline-block px-2 py-0.5 rounded text-xs font-semibold"
+                    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-semibold"
                           style={{ background: 'linear-gradient(135deg, var(--admin-primary), var(--admin-secondary))', color: '#000' }}>
-                      Supervisor
+                      <FiUsers className="w-3 h-3" />Supervisor
                     </span>
                     <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>click avatar</span>
                   </div>

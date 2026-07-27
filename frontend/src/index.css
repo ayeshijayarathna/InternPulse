@@ -102,6 +102,19 @@ body {
   color: var(--text-primary);
 }
 
+/* Override all hardcoded white text classes in light mode */
+[data-theme="light"] .text-white { color: var(--text-primary) !important; }
+[data-theme="light"] .text-gray-400 { color: var(--text-secondary) !important; }
+[data-theme="light"] .text-gray-600 { color: var(--text-muted) !important; }
+
+/* Override hover states */
+[data-theme="light"] .hover\:bg-white\/5:hover { background-color: rgba(0,0,0,0.04) !important; }
+
+/* Override inline color: '#fff' and color: '#000' for sidebar active items */
+[data-theme="light"] [style*="color: #fff"] { color: var(--text-primary) !important; }
+[data-theme="light"] [style*="color:'#fff'"] { color: var(--text-primary) !important; }
+[data-theme="light"] [style*="color: '#fff'"] { color: var(--text-primary) !important; }
+
 [data-theme="light"] ::-webkit-scrollbar-track { background: var(--bg-base); }
 [data-theme="light"] ::-webkit-scrollbar-thumb { background: #c1c9d6; }
 [data-theme="light"] ::-webkit-scrollbar-thumb:hover { background: #a0aab8; }

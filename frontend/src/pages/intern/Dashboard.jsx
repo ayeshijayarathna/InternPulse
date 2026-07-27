@@ -78,16 +78,6 @@ export default function InternDashboard() {
                     style={{ color: 'var(--text-secondary)' }}>
               {theme === 'dark' ? <FiSun className="w-5 h-5" /> : <FiMoon className="w-5 h-5" />}
             </button>
-            <button onClick={() => { setActiveTab('notifications'); setSidebarOpen(false); }}
-                    className="relative p-2 rounded-xl hover:bg-white/5 transition-all">
-              <FiBell className="w-5 h-5" style={{ color: 'var(--text-primary)' }} />
-              {unreadCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] rounded-full flex items-center justify-center text-[10px] font-bold text-white"
-                      style={{ background: 'var(--intern-primary)', padding: '0 4px' }}>
-                  {unreadCount > 99 ? '99+' : unreadCount}
-                </span>
-              )}
-            </button>
             <AvatarUpload
               user={user} size="sm"
               accentColor="var(--intern-primary)"
@@ -113,7 +103,7 @@ export default function InternDashboard() {
               <p className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>Intern Dashboard</p>
             </div>
 
-            {/* Profile */}
+            {/* Profile with notification bell */}
             <div className="p-6 border-b" style={{ borderColor: 'var(--border)' }}>
               <div className="flex items-center gap-3">
                 <AvatarUpload
@@ -123,12 +113,24 @@ export default function InternDashboard() {
                   onUpdate={(updated) => setUser?.(updated)}
                 />
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-bold truncate" style={{ color: 'var(--text-primary)' }}>{user?.name}</div>
+                  <div className="flex items-center gap-2">
+                    <div className="text-sm font-bold truncate" style={{ color: 'var(--text-primary)' }}>{user?.name}</div>
+                    <button onClick={() => setActiveTab('notifications')}
+                            className="relative shrink-0 p-1.5 rounded-lg transition-all hover:bg-white/5">
+                      <FiBell className="w-4 h-4" style={{ color: 'var(--text-secondary)' }} />
+                      {unreadCount > 0 && (
+                        <span className="absolute -top-1 -right-1 min-w-[16px] h-[16px] rounded-full flex items-center justify-center text-[9px] font-bold text-white"
+                              style={{ background: '#dc2626', padding: '0 3px' }}>
+                          {unreadCount > 99 ? '99+' : unreadCount}
+                        </span>
+                      )}
+                    </button>
+                  </div>
                   <div className="text-xs truncate" style={{ color: 'var(--text-secondary)' }}>{user?.email}</div>
                   <div className="mt-1 flex items-center gap-2">
-                    <span className="inline-block px-2 py-0.5 rounded text-xs font-semibold text-white"
+                    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-semibold text-white"
                           style={{ background: 'linear-gradient(135deg, var(--intern-primary), var(--intern-secondary))' }}>
-                      Intern
+                      <FiGrid className="w-3 h-3" />Intern
                     </span>
                     <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>click avatar</span>
                   </div>
