@@ -20,6 +20,8 @@ const notificationSchema = new mongoose.Schema(
         'required_day_assigned',     // intern: supervisor scheduled an office day
         'required_day_unavailable',  // supervisor: intern can't make a required day
         'required_day_reply',        // intern: supervisor replied to their reason
+        'admin_inquiry_received',    // supervisor: super admin sent inquiry
+        'admin_inquiry_reply',       // super admin: supervisor replied
       ],
       required: true,
     },

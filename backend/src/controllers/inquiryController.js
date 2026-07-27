@@ -167,7 +167,147 @@ const closeInquiry = async (req, res) => {
   }
 };
 
+// ─── Admin Inquiry Functions ───────────────────────────────────────────
+
+// POST /api/inquiries/admin
+// Super admin: send inquiry to a supervisor
+const createAdminInquiry = async (req, res) => {
+  try {
+    const { subject, message, supervisorId } = req.body;
+    if (!subject || !message || !supervisorId)
+      return res.status(400).json({ message: 'Subject, message, and supervisorId are required' });
+
+    const supervisor = await User.findById(supervisorId).select('name');
+    if (!supervisor) return res.status(404).json({ message: 'Supervisor not found' });
+
+    const inquiry = await Inquiry.create({
+      subject,
+      message,
+      createdBy:  req.user._id,
+      supervisor: supervisorId,
+      type:       'admin',
+      status:     'open',
+    });
+
+    await inquiry.populate('createdBy',  'name email avatar');
+    await inquiry.populate('supervisor', 'name email');
+
+    const io = req.app.locals.io;
+    createNotification(io, {
+      recipient:  supervisorId,
+      type:       'admin_inquiry_received',
+      title:      `📩 New Inquiry from Super Admin`,
+      message:    `Subject: "${subject}"`,
+      inquiryId:  inquiry._id,
+    });
+
+    res.status(201).json(inquiry);
+  } catch (err) {
+    console.error('createAdminInquiry error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// GET /api/inquiries/admin
+// Super admin: all admin inquiries
+const getAdminInquiries = async (req, res) => {
+  try {
+    const inquiries = await Inquiry.find({ type: 'admin' })
+      .populate('createdBy',    'name email avatar role')
+      .populate('supervisor',   'name email avatar')
+      .populate('replies.sender', 'name avatar role')
+      .sort({ createdAt: -1 });
+    res.json(inquiries);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// GET /api/inquiries/admin/mine
+// Supervisor: admin inquiries sent to me or created by me
+const getMyAdminInquiries = async (req, res) => {
+  try {
+    const inquiries = await Inquiry.find({
+      type: 'admin',
+      $or: [{ supervisor: req.user._id }, { createdBy: req.user._id }],
+    })
+      .populate('createdBy',    'name email avatar role')
+      .populate('supervisor',   'name email avatar')
+      .populate('replies.sender', 'name avatar role')
+      .sort({ createdAt: -1 });
+    res.json(inquiries);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// POST /api/inquiries/admin/:id/reply
+// Reply to admin inquiry (both super admin and supervisor can reply)
+const replyAdminInquiry = async (req, res) => {
+  try {
+    const { message } = req.body;
+    if (!message) return res.status(400).json({ message: 'Message is required' });
+
+    const inquiry = await Inquiry.findOne({
+      _id:  req.params.id,
+      type: 'admin',
+    });
+    if (!inquiry) return res.status(404).json({ message: 'Inquiry not found' });
+
+    inquiry.replies.push({ sender: req.user._id, message });
+    inquiry.status = 'replied';
+    await inquiry.save();
+
+    await inquiry.populate('createdBy',     'name email avatar');
+    await inquiry.populate('supervisor',    'name email avatar');
+    await inquiry.populate('replies.sender', 'name avatar role');
+
+    // Notify the other party
+    const io = req.app.locals.io;
+    const recipientId = req.user._id.toString() === inquiry.createdBy._id.toString()
+      ? inquiry.supervisor._id
+      : inquiry.createdBy._id;
+
+    const recipientName = req.user._id.toString() === inquiry.createdBy._id.toString()
+      ? inquiry.supervisor.name
+      : inquiry.createdBy.name;
+
+    createNotification(io, {
+      recipient:  recipientId,
+      type:       'admin_inquiry_reply',
+      title:      `💬 Inquiry reply from ${req.user.name}`,
+      message:    `Reply to: "${inquiry.subject}"`,
+      inquiryId:  inquiry._id,
+    });
+
+    res.json(inquiry);
+  } catch (err) {
+    console.error('replyAdminInquiry error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// PATCH /api/inquiries/admin/:id/status
+// Close admin inquiry
+const closeAdminInquiry = async (req, res) => {
+  try {
+    const inquiry = await Inquiry.findOne({
+      _id:  req.params.id,
+      type: 'admin',
+    });
+    if (!inquiry) return res.status(404).json({ message: 'Inquiry not found' });
+
+    inquiry.status = 'closed';
+    await inquiry.save();
+    res.json(inquiry);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 module.exports = {
   createInquiry, getMyInquiries, getInquiries,
   replyInquiry, updateInquiry, deleteInquiry, closeInquiry,
+  createAdminInquiry, getAdminInquiries, getMyAdminInquiries,
+  replyAdminInquiry, closeAdminInquiry,
 };
