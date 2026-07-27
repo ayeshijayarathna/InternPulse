@@ -3,7 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import {
   FiGrid, FiCheckSquare, FiFileText, FiPlusCircle,
-  FiLogOut, FiMenu, FiX, FiBell, FiUser, FiMessageSquare, FiCalendar
+  FiLogOut, FiMenu, FiX, FiBell, FiUser, FiMessageSquare, FiCalendar, FiBarChart2
 } from 'react-icons/fi';
 
 import { useNotifications }  from '../../context/NotificationContext';
@@ -16,6 +16,7 @@ import NotificationsPage     from './sections/intern_NotificationsPage';
 import EditProfilePage       from './sections/EditProfilePage';
 import InquiryPage           from './sections/intern_InquiryPage'; 
 import InternRequiredDaysPage from './sections/InternRequiredDaysPage';
+import InternChartsPage      from './sections/InternChartsPage';
 
 export default function InternDashboard() {
   const { user, logout, setUser }         = useAuth();
@@ -27,27 +28,29 @@ export default function InternDashboard() {
   const handleLogout = () => { logout(); navigate('/login'); };
 
   const navItems = [
-    { id: 'overview',      label: 'Overview',       icon: FiGrid          },
-    { id: 'tasks',         label: 'My Tasks',        icon: FiCheckSquare   },
-    { id: 'submit',        label: 'Submit Update',   icon: FiPlusCircle    },
-    { id: 'submissions',   label: 'My Submissions',  icon: FiFileText      },
-    { id: 'inquiry',       label: 'My Inquiries',    icon: FiMessageSquare }, 
-    { id: 'required-days', label: 'Required Days',   icon: FiCalendar      },
-    { id: 'notifications', label: 'Notifications',   icon: FiBell, badge: unreadCount },
-    { id: 'edit-profile',  label: 'Edit Profile',    icon: FiUser          },
+    { id: 'analytics',      label: 'Analytics',       icon: FiBarChart2     },
+    { id: 'overview',       label: 'Overview',        icon: FiGrid          },
+    { id: 'tasks',          label: 'My Tasks',        icon: FiCheckSquare   },
+    { id: 'submit',         label: 'Submit Update',   icon: FiPlusCircle    },
+    { id: 'submissions',    label: 'My Submissions',  icon: FiFileText      },
+    { id: 'inquiry',        label: 'My Inquiries',    icon: FiMessageSquare }, 
+    { id: 'required-days',  label: 'Required Days',   icon: FiCalendar      },
+    { id: 'notifications',  label: 'Notifications',   icon: FiBell, badge: unreadCount },
+    { id: 'edit-profile',   label: 'Edit Profile',    icon: FiUser          },
   ];
 
   const renderContent = () => {
     switch (activeTab) {
-      case 'overview':      return <OverviewPage setActiveTab={setActiveTab} />;
-      case 'tasks':         return <MyTasksPage />;
-      case 'submit':        return <SubmitUpdatePage />;
-      case 'submissions':   return <MySubmissionsPage />;
-      case 'inquiry':       return <InquiryPage />;      
-      case 'required-days': return <InternRequiredDaysPage />;
-      case 'notifications': return <NotificationsPage />;
-      case 'edit-profile':  return <EditProfilePage />;
-      default:              return <OverviewPage setActiveTab={setActiveTab} />;
+      case 'analytics':      return <InternChartsPage />;
+      case 'overview':       return <OverviewPage setActiveTab={setActiveTab} />;
+      case 'tasks':          return <MyTasksPage />;
+      case 'submit':         return <SubmitUpdatePage />;
+      case 'submissions':    return <MySubmissionsPage />;
+      case 'inquiry':        return <InquiryPage />;      
+      case 'required-days':  return <InternRequiredDaysPage />;
+      case 'notifications':  return <NotificationsPage />;
+      case 'edit-profile':   return <EditProfilePage />;
+      default:               return <InternChartsPage />;
     }
   };
 
