@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { FiCheckSquare, FiPlus, FiEdit2, FiTrash2, FiUser, FiClock, FiAlertCircle, FiChevronDown, FiX } from 'react-icons/fi';
+import { FiCheckSquare, FiPlus, FiEdit2, FiTrash2, FiUser, FiClock, FiAlertCircle, FiChevronDown, FiX, FiFolder } from 'react-icons/fi';
 import axiosInstance from '../../../api/axiosInstance';
 
 // ── Multi-select dropdown component ──────────────────────────────────────────
@@ -123,6 +123,8 @@ function MultiSelectInterns({ interns, selected, onChange }) {
 export default function TasksPage() {
   const [tasks, setTasks] = useState([]);
   const [interns, setInterns] = useState([]);
+  const [projects, setProjects] = useState([]);
+  const [projectFilter, setProjectFilter] = useState('all');
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
@@ -132,7 +134,8 @@ export default function TasksPage() {
     priority: 'medium',
     status: 'pending',
     dueDate: '',
-    assignedTo: [],   // ← now an array
+    assignedTo: [],
+    projectId: '',
   });
   const [actionLoading, setActionLoading] = useState(null);
 
@@ -143,12 +146,14 @@ export default function TasksPage() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [tasksRes, internsRes] = await Promise.all([
+      const [tasksRes, internsRes, projectsRes] = await Promise.all([
         axiosInstance.get('/tasks'),
         axiosInstance.get('/users/interns'),
+        axiosInstance.get('/projects'),
       ]);
       setTasks(tasksRes.data);
       setInterns(internsRes.data.filter((i) => i.isActive));
+      setProjects(projectsRes.data);
     } catch (error) {
       console.error('Error fetching data:', error);
       alert('Failed to load data');
@@ -158,7 +163,7 @@ export default function TasksPage() {
   };
 
   const resetForm = () => {
-    setFormData({ title: '', description: '', priority: 'medium', status: 'pending', dueDate: '', assignedTo: [] });
+    setFormData({ title: '', description: '', priority: 'medium', status: 'pending', dueDate: '', assignedTo: [], projectId: '' });
   };
 
   const handleSubmit = async (e) => {
@@ -196,12 +201,12 @@ export default function TasksPage() {
       priority:    task.priority,
       status:      task.status,
       dueDate:     task.dueDate ? task.dueDate.split('T')[0] : '',
-      // assignedTo may be array of objects or IDs
       assignedTo:  Array.isArray(task.assignedTo)
         ? task.assignedTo.map((a) => (typeof a === 'object' ? a._id : a))
         : task.assignedTo
           ? [typeof task.assignedTo === 'object' ? task.assignedTo._id : task.assignedTo]
           : [],
+      projectId:   task.projectId ? (typeof task.projectId === 'object' ? task.projectId._id : task.projectId) : '',
     });
     setShowModal(true);
   };
@@ -288,8 +293,39 @@ export default function TasksPage() {
         ))}
       </div>
 
+      {/* Project Filter Tabs */}
+      {projects.length > 0 && (
+        <div className="flex items-center gap-2 overflow-x-auto pb-2">
+          <button
+            onClick={() => setProjectFilter('all')}
+            className="px-3 py-1.5 rounded-lg text-sm font-semibold transition-all whitespace-nowrap"
+            style={{
+              background: projectFilter === 'all' ? 'var(--admin-primary)' : 'var(--bg-card)',
+              color: projectFilter === 'all' ? '#000' : 'var(--text-secondary)',
+              border: '1px solid var(--border)',
+            }}
+          >
+            All Tasks
+          </button>
+          {projects.map((project) => (
+            <button
+              key={project._id}
+              onClick={() => setProjectFilter(project._id)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold transition-all whitespace-nowrap"
+              style={{
+                background: projectFilter === project._id ? `${project.color}20` : 'var(--bg-card)',
+                color: projectFilter === project._id ? project.color : 'var(--text-secondary)',
+                border: `1px solid ${projectFilter === project._id ? project.color + '40' : 'var(--border)'}`,
+              }}
+            >
+              <FiFolder className="w-3 h-3" />{project.name}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Tasks List */}
-      {tasks.length === 0 ? (
+      {tasks.filter((t) => projectFilter === 'all' || (t.projectId && (typeof t.projectId === 'object' ? t.projectId._id : t.projectId) === projectFilter)).length === 0 ? (
         <div className="text-center py-20">
           <FiCheckSquare className="w-16 h-16 text-gray-600 mx-auto mb-4" />
           <h3 className="text-xl font-semibold text-gray-400 mb-2">No tasks yet</h3>
@@ -297,15 +333,17 @@ export default function TasksPage() {
         </div>
       ) : (
         <div className="space-y-3">
-          {tasks.map((task) => {
+          {tasks
+            .filter((t) => projectFilter === 'all' || (t.projectId && (typeof t.projectId === 'object' ? t.projectId._id : t.projectId) === projectFilter))
+            .map((task) => {
             const priorityStyle = getPriorityColor(task.priority);
             const statusStyle   = getStatusColor(task.status);
-            // normalise assignedTo to array
             const assigned = Array.isArray(task.assignedTo)
               ? task.assignedTo
               : task.assignedTo
               ? [task.assignedTo]
               : [];
+            const project = task.projectId && typeof task.projectId === 'object' ? task.projectId : null;
 
             return (
               <div
@@ -320,6 +358,12 @@ export default function TasksPage() {
                       <h3 className="text-lg font-bold text-white truncate" style={{ fontFamily: 'var(--font-display)' }}>
                         {task.title}
                       </h3>
+                      {project && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-xs font-semibold"
+                              style={{ background: `${project.color}20`, color: project.color, border: `1px solid ${project.color}40` }}>
+                          <FiFolder className="w-3 h-3" />{project.name}
+                        </span>
+                      )}
                       <span
                         className="px-2.5 py-1 rounded-lg text-xs font-semibold uppercase border"
                         style={{ background: priorityStyle.bg, color: priorityStyle.text, borderColor: priorityStyle.border }}
@@ -434,8 +478,22 @@ export default function TasksPage() {
                 />
               </div>
 
-              {/* Priority + Status */}
+              {/* Project + Priority */}
               <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-[var(--text-secondary)] mb-2">Project</label>
+                  <select
+                    value={formData.projectId}
+                    onChange={(e) => setFormData({ ...formData, projectId: e.target.value })}
+                    className="w-full px-4 py-2.5 rounded-xl border outline-none transition-all text-white"
+                    style={{ background: 'var(--bg-surface)', borderColor: 'var(--border)' }}
+                  >
+                    <option value="">No Project</option>
+                    {projects.map((project) => (
+                      <option key={project._id} value={project._id}>{project.name}</option>
+                    ))}
+                  </select>
+                </div>
                 <div>
                   <label className="block text-sm font-semibold text-[var(--text-secondary)] mb-2">Priority</label>
                   <select
@@ -449,19 +507,21 @@ export default function TasksPage() {
                     <option value="high">High</option>
                   </select>
                 </div>
-                <div>
-                  <label className="block text-sm font-semibold text-[var(--text-secondary)] mb-2">Status</label>
-                  <select
-                    value={formData.status}
-                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                    className="w-full px-4 py-2.5 rounded-xl border outline-none transition-all text-white"
-                    style={{ background: 'var(--bg-surface)', borderColor: 'var(--border)' }}
-                  >
-                    <option value="pending">Pending</option>
-                    <option value="in-progress">In Progress</option>
-                    <option value="completed">Completed</option>
-                  </select>
-                </div>
+              </div>
+
+              {/* Status */}
+              <div>
+                <label className="block text-sm font-semibold text-[var(--text-secondary)] mb-2">Status</label>
+                <select
+                  value={formData.status}
+                  onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                  className="w-full px-4 py-2.5 rounded-xl border outline-none transition-all text-white"
+                  style={{ background: 'var(--bg-surface)', borderColor: 'var(--border)' }}
+                >
+                  <option value="pending">Pending</option>
+                  <option value="in-progress">In Progress</option>
+                  <option value="completed">Completed</option>
+                </select>
               </div>
 
               {/* Due Date + Assign To */}

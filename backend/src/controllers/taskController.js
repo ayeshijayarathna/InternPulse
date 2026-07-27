@@ -18,7 +18,7 @@ const validateInterns = async (internIds, supervisorId) => {
 // Supervisor creates task — assignedTo is now an array of intern IDs
 const createTask = async (req, res) => {
   try {
-    const { title, description, priority, dueDate, assignedTo } = req.body;
+    const { title, description, priority, dueDate, assignedTo, projectId } = req.body;
 
     if (!title) {
       return res.status(400).json({ message: 'Task title is required' });
@@ -46,6 +46,7 @@ const createTask = async (req, res) => {
       dueDate:    dueDate       || null,
       assignedTo: assignedIds,          // ← array
       createdBy:  req.user._id,
+      projectId:  projectId || null,
     });
 
     await task.populate('assignedTo', 'name email');
@@ -85,6 +86,7 @@ const getAllTasks = async (req, res) => {
     const tasks = await Task.find({ createdBy: req.user._id })
       .populate('assignedTo', 'name email')
       .populate('createdBy',  'name')
+      .populate('projectId', 'name color status')
       .sort({ createdAt: -1 });
 
     res.json(tasks);
@@ -135,13 +137,14 @@ const updateTask = async (req, res) => {
       delete req.body.assignedTo; // handled above
     }
 
-    const allowed = ['title', 'description', 'priority', 'status', 'dueDate'];
+    const allowed = ['title', 'description', 'priority', 'status', 'dueDate', 'projectId'];
     allowed.forEach((field) => {
       if (req.body[field] !== undefined) task[field] = req.body[field];
     });
 
     await task.save();
     await task.populate('assignedTo', 'name email');
+    await task.populate('projectId', 'name color status');
     res.json(task);
   } catch (err) {
     res.status(500).json({ message: 'Server error', error: err.message });

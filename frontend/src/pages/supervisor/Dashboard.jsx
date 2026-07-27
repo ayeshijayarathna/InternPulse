@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   FiActivity, FiUsers, FiCheckSquare, FiFileText,
   FiLogOut, FiMenu, FiX, FiBell, FiMessageSquare, FiVolume2, FiCalendar,
-  FiSun, FiMoon
+  FiSun, FiMoon, FiFolder, FiBarChart2
 } from 'react-icons/fi';
 
 import { useNotifications }  from '../../context/NotificationContext';
@@ -20,6 +20,8 @@ import AnnouncementsPage     from './sections/supervisor_AnnouncementsPage';
 import InquiriesPage         from './sections/supervisor_InquiriesPage';
 import AdminInquiriesPage    from './sections/SupervisorAdminInquiriesPage';
 import SupervisorRequiredDaysPage from './sections/SupervisorRequiredDaysPage';
+import ProjectsPage          from './sections/ProjectsPage';
+import SupervisorChartsPage  from './sections/SupervisorChartsPage';
 
 export default function SupervisorDashboard() {
   const { user, logout, setUser }      = useAuth();
@@ -33,6 +35,8 @@ export default function SupervisorDashboard() {
 
   const navItems = [
     { id: 'overview',       label: 'Overview',       icon: FiActivity      },
+    { id: 'analytics',      label: 'Analytics',      icon: FiBarChart2     },
+    { id: 'projects',       label: 'Projects',       icon: FiFolder        },
     { id: 'interns',        label: 'Interns',         icon: FiUsers         },
     { id: 'tasks',          label: 'Tasks',           icon: FiCheckSquare   },
     { id: 'submissions',    label: 'Submissions',     icon: FiFileText      },
@@ -46,6 +50,8 @@ export default function SupervisorDashboard() {
   const renderContent = () => {
     switch (activeTab) {
       case 'overview':       return <OverviewPage />;
+      case 'analytics':      return <SupervisorChartsPage />;
+      case 'projects':       return <ProjectsPage />;
       case 'interns':        return <InternsPage />;
       case 'tasks':          return <TasksPage />;
       case 'submissions':    return <SubmissionsPage />;

@@ -58,6 +58,8 @@ app.use('/api/announcements', require('./routes/announcements'));
 app.use('/api/inquiries',     require('./routes/inquiries'));    
 app.use('/api/required-days', require('./routes/requiredDays'));
 app.use('/api/record-book',  require('./routes/recordBook'));
+app.use('/api/projects',     require('./routes/projects'));
+app.use('/api/analytics',    require('./routes/analytics'));
 
 
 // Protected file download

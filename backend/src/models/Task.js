@@ -39,6 +39,11 @@ const taskSchema = new mongoose.Schema(
       type:    Date,
       default: null,
     },
+    projectId: {
+      type:    mongoose.Schema.Types.ObjectId,
+      ref:     'Project',
+      default: null,
+    },
   },
   {
     timestamps: true,

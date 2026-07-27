@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import {
   FiFileText, FiUser, FiClock, FiCheckCircle,
-  FiDownload, FiPaperclip, FiRefreshCw, FiZap, FiImage
+  FiDownload, FiPaperclip, FiRefreshCw, FiZap, FiImage, FiFolder
 } from 'react-icons/fi';
 import axiosInstance from '../../../api/axiosInstance';
 
@@ -10,7 +10,6 @@ const TYPE_META = {
   self_task: { label: 'Self Task',  icon: FiZap,         color: '#a78bfa', bg: 'rgba(167,139,250,0.1)', border: 'rgba(167,139,250,0.25)' },
 };
 
-// Download via protected API endpoint 
 const downloadFile = async (filename, originalName) => {
   try {
     const token = localStorage.getItem('token');
@@ -38,29 +37,57 @@ const isImageMime = (mime) => mime?.startsWith('image/');
 
 export default function SubmissionsPage() {
   const [submissions, setSubmissions] = useState([]);
-  const [loading,     setLoading]     = useState(true);
-  const [filter,      setFilter]      = useState('all');
+  const [projects, setProjects]       = useState([]);
+  const [loading, setLoading]         = useState(true);
+  const [filter, setFilter]           = useState('all');
+  const [projectFilter, setProjectFilter] = useState('all');
 
-  useEffect(() => { fetchSubmissions(); }, []);
+  useEffect(() => { fetchData(); }, []);
 
-  const fetchSubmissions = async () => {
+  const fetchData = async () => {
     setLoading(true);
     try {
-      const res = await axiosInstance.get('/updates');
-      setSubmissions(res.data.filter(s => s.type !== 'blocker'));
+      const [updatesRes, projectsRes] = await Promise.all([
+        axiosInstance.get('/updates'),
+        axiosInstance.get('/projects'),
+      ]);
+      setSubmissions(updatesRes.data.filter(s => s.type !== 'blocker'));
+      setProjects(projectsRes.data);
     } catch { /* silent */ }
     finally { setLoading(false); }
   };
 
-  const filtered = filter === 'all'
-    ? submissions
-    : submissions.filter(s => s.type === filter);
+  const getProjectForSubmission = (sub) => {
+    if (sub.taskId && typeof sub.taskId === 'object' && sub.taskId.projectId) {
+      const pid = typeof sub.taskId.projectId === 'object' ? sub.taskId.projectId._id : sub.taskId.projectId;
+      return projects.find((p) => p._id === pid) || null;
+    }
+    return null;
+  };
+
+  const filtered = submissions
+    .filter((s) => filter === 'all' || s.type === filter)
+    .filter((s) => {
+      if (projectFilter === 'all') return true;
+      const project = getProjectForSubmission(s);
+      return project && project._id === projectFilter;
+    });
 
   const counts = {
     all:       submissions.length,
     update:    submissions.filter(s => s.type === 'update').length,
     self_task: submissions.filter(s => s.type === 'self_task').length,
   };
+
+  const projectCounts = {
+    all: submissions.length,
+  };
+  projects.forEach((p) => {
+    projectCounts[p._id] = submissions.filter((s) => {
+      const project = getProjectForSubmission(s);
+      return project && project._id === p._id;
+    }).length;
+  });
 
   const filterTabs = [
     { id: 'all',       label: 'All',         count: counts.all       },
@@ -96,7 +123,7 @@ export default function SubmissionsPage() {
             </p>
           </div>
         </div>
-        <button onClick={fetchSubmissions}
+        <button onClick={fetchData}
                 className="p-2 rounded-xl border transition-all hover:bg-white/5"
                 style={{ borderColor: 'var(--border)' }}>
           <FiRefreshCw className="w-4 h-4" style={{ color: 'var(--text-secondary)' }} />
@@ -120,7 +147,7 @@ export default function SubmissionsPage() {
         ))}
       </div>
 
-      {/* Filter tabs */}
+      {/* Type filter tabs */}
       <div className="flex items-center gap-2">
         {filterTabs.map(tab => (
           <button key={tab.id} onClick={() => setFilter(tab.id)}
@@ -137,6 +164,37 @@ export default function SubmissionsPage() {
         ))}
       </div>
 
+      {/* Project filter tabs */}
+      {projects.length > 0 && (
+        <div className="flex items-center gap-2 overflow-x-auto pb-1">
+          <button
+            onClick={() => setProjectFilter('all')}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold transition-all whitespace-nowrap"
+            style={{
+              background: projectFilter === 'all' ? 'var(--admin-primary)' : 'var(--bg-card)',
+              color: projectFilter === 'all' ? '#000' : 'var(--text-secondary)',
+              border: '1px solid var(--border)',
+            }}
+          >
+            <FiFolder className="w-3 h-3" />All Projects ({projectCounts.all})
+          </button>
+          {projects.map((project) => (
+            <button
+              key={project._id}
+              onClick={() => setProjectFilter(project._id)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold transition-all whitespace-nowrap"
+              style={{
+                background: projectFilter === project._id ? `${project.color}20` : 'var(--bg-card)',
+                color: projectFilter === project._id ? project.color : 'var(--text-secondary)',
+                border: `1px solid ${projectFilter === project._id ? project.color + '40' : 'var(--border)'}`,
+              }}
+            >
+              <FiFolder className="w-3 h-3" />{project.name} ({projectCounts[project._id] || 0})
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* List */}
       {filtered.length === 0 ? (
         <div className="text-center py-16 rounded-2xl border"
@@ -149,6 +207,7 @@ export default function SubmissionsPage() {
           {filtered.map((sub) => {
             const meta = TYPE_META[sub.type] || TYPE_META.update;
             const Icon = meta.icon;
+            const project = getProjectForSubmission(sub);
             return (
               <div key={sub._id}
                    className="p-5 rounded-xl border transition-all hover:border-[var(--admin-primary)]"
@@ -166,6 +225,12 @@ export default function SubmissionsPage() {
                             style={{ background: meta.bg, color: meta.color, borderColor: meta.border }}>
                         {meta.label}
                       </span>
+                      {project && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-xs font-semibold"
+                              style={{ background: `${project.color}20`, color: project.color, border: `1px solid ${project.color}40` }}>
+                          <FiFolder className="w-3 h-3" />{project.name}
+                        </span>
+                      )}
                       {sub.taskId && (
                         <span className="text-sm font-semibold text-white">{sub.taskId.title}</span>
                       )}
@@ -202,7 +267,6 @@ export default function SubmissionsPage() {
                         <div key={idx}
                              className="flex items-center gap-3 p-3 rounded-lg border"
                              style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'var(--border)' }}>
-                          {/* File icon */}
                           <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
                                style={{ background: isImageMime(file.fileType) ? 'rgba(99,102,241,0.15)' : 'rgba(249,115,22,0.12)' }}>
                             {isImageMime(file.fileType)
@@ -218,7 +282,6 @@ export default function SubmissionsPage() {
                               {file.fileSize ? `${(file.fileSize / 1024).toFixed(1)} KB` : ''}
                             </div>
                           </div>
-                          {/* Download button */}
                           <button
                             onClick={() => downloadFile(file.filename, file.originalName)}
                             className="p-2 rounded-lg transition-all hover:bg-white/10 shrink-0"
