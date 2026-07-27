@@ -96,7 +96,7 @@ InternPulse is a full-stack intern management platform designed for real-world d
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/ayeshijayarathna/InternPulse.git
+git clone https://github.com/your-username/InternPulse.git
 cd InternPulse
 ```
 
@@ -122,9 +122,9 @@ MAIL_PASS=your_gmail_app_password
 FRONTEND_URL=http://localhost
 TZ=Asia/Colombo
 
-SUPER_ADMIN_NAME=Super Admin
-SUPER_ADMIN_EMAIL=superadmin@internpulse.com
-SUPER_ADMIN_PASSWORD=Admin@1234!
+SUPER_ADMIN_NAME=Your Name
+SUPER_ADMIN_EMAIL=admin@yourdomain.com
+SUPER_ADMIN_PASSWORD=your_secure_password
 ```
 
 **`frontend/.env`**
@@ -149,10 +149,10 @@ This starts three containers:
 ### 4. Seed the database
 
 ```bash
-# Seed Super Admin + Supervisor (Bhanuka) + 10 interns
+# Seed Super Admin + Supervisor + 10 interns
 docker exec internpulse-backend node src/scripts/seed.js
 
-# Seed 21 additional interns across other 9 supervisors
+# Seed 21 additional interns across other supervisors
 docker exec internpulse-backend node src/scripts/seedOtherInterns.js
 ```
 
@@ -162,14 +162,7 @@ docker exec internpulse-backend node src/scripts/seedOtherInterns.js
 http://localhost
 ```
 
-### Default Credentials
-
-| Role | Email | Password |
-|---|---|---|
-| Super Admin | `superadmin@internpulse.com` | `Admin@1234!` |
-| Supervisor (Bhanuka) | `bhanuka@internpulse.com` | `Bhanuka@1234!` |
-| Other Supervisors | *(created via Super Admin dashboard)* | `Supervisor@1234!` |
-| Any Intern | *(created via Supervisor dashboard)* | `Intern@1234!` |
+The Super Admin account is created automatically from the `SUPER_ADMIN_*` values in your `backend/.env`. Supervisors and Interns are created from within the app.
 
 ---
 
@@ -406,9 +399,3 @@ All dashboards support **dark mode** (default) and **light mode** via the theme 
 ## 📜 License
 
 This project is for educational and demonstration purposes.
-
----
-
-<div align="center">
-  Made with ❤️ by <a href="https://github.com/ayeshijayarathna">Ayeshi Jayarathna</a>
-</div>
