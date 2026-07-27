@@ -8,13 +8,12 @@ const { createNotification } = require('../services/notificationService');
 // Intern submits update / self_task (locked after submit)
 const createUpdate = async (req, res) => {
   try {
-    const { taskId, type, content } = req.body;
+    const { taskId, projectId, type, content } = req.body;
 
     if (!content?.trim()) {
       return res.status(400).json({ message: 'Content is required' });
     }
 
-    // If taskId provided, verify intern is assigned to that task
     if (taskId) {
       const task = await Task.findOne({ _id: taskId, assignedTo: req.user._id });
       if (!task) {
@@ -22,17 +21,17 @@ const createUpdate = async (req, res) => {
       }
     }
 
-    // Build attachments array from disk-saved files 
     const attachments = (req.files || []).map(file => ({
-      filename:     file.filename,                    // saved name on disk e.g. 1718000000-123456.pdf
+      filename:     file.filename,
       originalName: file.originalname,
       fileType:     file.mimetype,
       fileSize:     file.size,
-      path:         file.path,                        // absolute path (server-side only)
+      path:         file.path,
     }));
 
     const update = await TaskUpdate.create({
-      taskId:    taskId || null,
+      taskId:    taskId    || null,
+      projectId: projectId || null,
       createdBy: req.user._id,
       type:      type   || 'update',
       content:   content.trim(),
@@ -41,18 +40,19 @@ const createUpdate = async (req, res) => {
     });
 
     await update.populate('taskId',    'title');
+    await update.populate('projectId', 'name color');
     await update.populate('createdBy', 'name email');
 
-    //Notify supervisor
     const internUser = await User.findById(req.user._id).select('createdBy name');
     if (internUser?.createdBy) {
       const io = req.app.locals.io;
       createNotification(io, {
         recipient: internUser.createdBy,
         type:      'submission_received',
-        title:     '📨 New Submission Received',
+        title:     'New Submission Received',
         message:   `${internUser.name} submitted an update${update.taskId?.title ? ` for task: "${update.taskId.title}"` : ''}.`,
-        taskId:    taskId || null,
+        taskId:    taskId    || null,
+        projectId: projectId || null,
         updateId:  update._id,
       });
     }
@@ -69,7 +69,8 @@ const createUpdate = async (req, res) => {
 const getMyUpdates = async (req, res) => {
   try {
     const updates = await TaskUpdate.find({ createdBy: req.user._id })
-      .populate('taskId', 'title')
+      .populate('taskId',    'title')
+      .populate('projectId', 'name color')
       .sort({ createdAt: -1 });
     res.json(updates);
   } catch (err) {
@@ -90,6 +91,7 @@ const getAllUpdates = async (req, res) => {
 
     const updates = await TaskUpdate.find({ createdBy: { $in: internIds } })
       .populate('taskId',    'title')
+      .populate('projectId', 'name color')
       .populate('createdBy', 'name email avatar')
       .sort({ createdAt: -1 });
 
@@ -106,4 +108,31 @@ const blockEdit   = (req, res) =>
 const blockDelete = (req, res) =>
   res.status(403).json({ message: 'Submissions are locked and cannot be deleted' });
 
-module.exports = { createUpdate, getAllUpdates, getMyUpdates, blockEdit, blockDelete };
+// PATCH /api/updates/:id/status  — Supervisor marks submission complete
+const markComplete = async (req, res) => {
+  try {
+    const { status } = req.body;
+    if (!['pending', 'completed'].includes(status)) {
+      return res.status(400).json({ message: 'Invalid status' });
+    }
+
+    const update = await TaskUpdate.findById(req.params.id);
+    if (!update) {
+      return res.status(404).json({ message: 'Submission not found' });
+    }
+
+    update.status = status;
+    await update.save();
+
+    await update.populate('taskId',    'title');
+    await update.populate('projectId', 'name color');
+    await update.populate('createdBy', 'name email');
+
+    res.json(update);
+  } catch (err) {
+    console.error('markComplete error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+module.exports = { createUpdate, getAllUpdates, getMyUpdates, blockEdit, blockDelete, markComplete };

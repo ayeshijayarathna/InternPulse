@@ -7,6 +7,7 @@ const {
   getMyUpdates,
   blockEdit,
   blockDelete,
+  markComplete,
 } = require('../controllers/updateController');
 
 const { protect, supervisorOnly, internOnly } = require('../middleware/auth');
@@ -28,9 +29,11 @@ router.post(
 //GET /api/updates  (Supervisor: all submissions)
 router.get('/', protect, supervisorOnly, getAllUpdates);
 
+// PATCH /api/updates/:id/status  (Supervisor: mark complete/pending)
+router.patch('/:id/status', protect, supervisorOnly, markComplete);
+
 //"Backend must return 403 if attempted" (edit/delete blocked)
 router.put('/:id',    protect, blockEdit);
-router.patch('/:id',  protect, blockEdit);
-router.delete('/:id', protect, blockDelete);
+router.patch('/:id',  protect, blockDelete);
 
 module.exports = router;

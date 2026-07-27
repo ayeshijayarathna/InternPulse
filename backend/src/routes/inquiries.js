@@ -4,7 +4,7 @@ const {
   createInquiry, getMyInquiries, getInquiries,
   replyInquiry, updateInquiry, deleteInquiry, closeInquiry,
   createAdminInquiry, getAdminInquiries, getMyAdminInquiries,
-  replyAdminInquiry, closeAdminInquiry,
+  replyAdminInquiry, closeAdminInquiry, createSupervisorToAdminInquiry,
 } = require('../controllers/inquiryController');
 
 // Intern routes
@@ -20,6 +20,7 @@ router.patch('/:id/status',   protect, supervisorOnly, closeInquiry);
 
 // Admin inquiry routes
 router.post('/admin',              protect, superAdminOnly,  createAdminInquiry);
+router.post('/admin/from-supervisor', protect, supervisorOnly, createSupervisorToAdminInquiry);
 router.get('/admin',               protect, superAdminOnly,  getAdminInquiries);
 router.get('/admin/mine',          protect, supervisorOnly,  getMyAdminInquiries);
 router.post('/admin/:id/reply',    protect, supervisorOnly,  replyAdminInquiry);

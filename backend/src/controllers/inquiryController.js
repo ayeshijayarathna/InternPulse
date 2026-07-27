@@ -169,6 +169,46 @@ const closeInquiry = async (req, res) => {
 
 // ─── Admin Inquiry Functions ───────────────────────────────────────────
 
+// POST /api/inquiries/admin/from-supervisor
+// Supervisor: send inquiry to super admin
+const createSupervisorToAdminInquiry = async (req, res) => {
+  try {
+    const { subject, message } = req.body;
+    if (!subject || !message)
+      return res.status(400).json({ message: 'Subject and message are required' });
+
+    // Find the super admin
+    const superAdmin = await User.findOne({ role: 'super_admin' }).select('_id');
+    if (!superAdmin) return res.status(404).json({ message: 'Super admin not found' });
+
+    const inquiry = await Inquiry.create({
+      subject,
+      message,
+      createdBy:  req.user._id,
+      targetAdmin: superAdmin._id,
+      type:       'admin',
+      status:     'open',
+    });
+
+    await inquiry.populate('createdBy',  'name email avatar');
+    await inquiry.populate('supervisor', 'name email');
+
+    const io = req.app.locals.io;
+    createNotification(io, {
+      recipient:  superAdmin._id,
+      type:       'admin_inquiry_received',
+      title:      `📩 New Inquiry from ${req.user.name}`,
+      message:    `Subject: "${subject}"`,
+      inquiryId:  inquiry._id,
+    });
+
+    res.status(201).json(inquiry);
+  } catch (err) {
+    console.error('createSupervisorToAdminInquiry error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 // POST /api/inquiries/admin
 // Super admin: send inquiry to a supervisor
 const createAdminInquiry = async (req, res) => {
@@ -229,7 +269,7 @@ const getMyAdminInquiries = async (req, res) => {
   try {
     const inquiries = await Inquiry.find({
       type: 'admin',
-      $or: [{ supervisor: req.user._id }, { createdBy: req.user._id }],
+      $or: [{ supervisor: req.user._id }, { createdBy: req.user._id }, { targetAdmin: req.user._id }],
     })
       .populate('createdBy',    'name email avatar role')
       .populate('supervisor',   'name email avatar')
@@ -309,5 +349,5 @@ module.exports = {
   createInquiry, getMyInquiries, getInquiries,
   replyInquiry, updateInquiry, deleteInquiry, closeInquiry,
   createAdminInquiry, getAdminInquiries, getMyAdminInquiries,
-  replyAdminInquiry, closeAdminInquiry,
+  replyAdminInquiry, closeAdminInquiry, createSupervisorToAdminInquiry,
 };

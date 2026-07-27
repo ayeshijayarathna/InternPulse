@@ -18,6 +18,11 @@ const taskUpdateSchema = new mongoose.Schema(
       ref:     'Task',
       default: null,
     },
+    projectId: {
+      type:    mongoose.Schema.Types.ObjectId,
+      ref:     'Project',
+      default: null,
+    },
     createdBy: {
       type:     mongoose.Schema.Types.ObjectId,
       ref:      'User',
@@ -36,6 +41,11 @@ const taskUpdateSchema = new mongoose.Schema(
     locked: {
       type:    Boolean,
       default: true,
+    },
+    status: {
+      type:    String,
+      enum:    ['pending', 'completed'],
+      default: 'pending',
     },
     attachments: {
       type:    [attachmentSchema],
