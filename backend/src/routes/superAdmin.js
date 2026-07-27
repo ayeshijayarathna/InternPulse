@@ -16,6 +16,11 @@ const {
   exportHierarchyCSV,
   exportTasksCSV,
   exportFullReportCSV,
+  getSupervisorsJSON,
+  getInternsJSON,
+  getHierarchyJSON,
+  getTasksJSON,
+  getFullReportJSON,
 } = require('../controllers/superAdminController');
 
 const { protect, superAdminOnly } = require('../middleware/auth');
@@ -51,5 +56,12 @@ router.get('/reports/interns',             protect, superAdminOnly, exportIntern
 router.get('/reports/hierarchy',           protect, superAdminOnly, exportHierarchyCSV);
 router.get('/reports/tasks',               protect, superAdminOnly, exportTasksCSV);
 router.get('/reports/full',                protect, superAdminOnly, exportFullReportCSV);
+
+// JSON report endpoints (for PDF generation)
+router.get('/reports-json/supervisors',    protect, superAdminOnly, getSupervisorsJSON);
+router.get('/reports-json/interns',        protect, superAdminOnly, getInternsJSON);
+router.get('/reports-json/hierarchy',      protect, superAdminOnly, getHierarchyJSON);
+router.get('/reports-json/tasks',          protect, superAdminOnly, getTasksJSON);
+router.get('/reports-json/full',           protect, superAdminOnly, getFullReportJSON);
 
 module.exports = router;

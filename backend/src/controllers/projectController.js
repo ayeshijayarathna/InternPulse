@@ -191,6 +191,17 @@ const getProjectStats = async (req, res) => {
   }
 };
 
+const getMyProjects = async (req, res) => {
+  try {
+    const projects = await Project.find({ assignedInterns: req.user._id })
+      .populate('assignedInterns', 'name email avatar')
+      .sort('-createdAt');
+    res.json(projects);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+};
+
 module.exports = {
   createProject,
   getAllProjects,
@@ -198,4 +209,5 @@ module.exports = {
   updateProject,
   deleteProject,
   getProjectStats,
+  getMyProjects,
 };

@@ -485,6 +485,110 @@ const exportFullReportCSV = async (req, res) => {
   }
 };
 
+// ── JSON report endpoints (for PDF generation on frontend) ───────────────────
+
+const getSupervisorsJSON = async (req, res) => {
+  try {
+    const supervisors = await User.find({ role: 'supervisor' }).select('-passwordHash').sort({ createdAt: -1 });
+    const data = await Promise.all(supervisors.map(async (s) => {
+      const internCount = await User.countDocuments({ role: 'intern', createdBy: s._id });
+      return { name: s.name, email: s.email, isActive: s.isActive, internCount, createdAt: s.createdAt };
+    }));
+    res.json(data);
+  } catch (err) { res.status(500).json({ message: err.message }); }
+};
+
+const getInternsJSON = async (req, res) => {
+  try {
+    const interns = await User.find({ role: 'intern' }).select('-passwordHash').sort({ createdAt: -1 });
+    const supervisors = await User.find({ role: 'supervisor' }).select('name');
+    const supMap = {}; supervisors.forEach(s => { supMap[s._id.toString()] = s.name; });
+    const data = interns.map(i => ({
+      name: i.name, email: i.email, isActive: i.isActive,
+      supervisor: supMap[i.createdBy?.toString()] || 'N/A',
+      university: i.university || '', hometown: i.hometown || '',
+      internshipStart: i.internshipStart, internshipEnd: i.internshipEnd, createdAt: i.createdAt,
+    }));
+    res.json(data);
+  } catch (err) { res.status(500).json({ message: err.message }); }
+};
+
+const getHierarchyJSON = async (req, res) => {
+  try {
+    const supervisors = await User.find({ role: 'supervisor' }).select('name email isActive');
+    const data = [];
+    for (const sup of supervisors) {
+      const interns = await User.find({ role: 'intern', createdBy: sup._id }).select('name email isActive university hometown createdAt');
+      data.push({
+        supervisor: { name: sup.name, email: sup.email, isActive: sup.isActive },
+        interns: interns.map(i => ({ name: i.name, email: i.email, isActive: i.isActive, university: i.university || '', hometown: i.hometown || '', joined: i.createdAt })),
+      });
+    }
+    res.json(data);
+  } catch (err) { res.status(500).json({ message: err.message }); }
+};
+
+const getTasksJSON = async (req, res) => {
+  try {
+    const Task = require('../models/Task');
+    const tasks = await Task.find().sort({ createdAt: -1 });
+    const users = await User.find().select('name');
+    const userMap = {}; users.forEach(u => { userMap[u._id.toString()] = u.name; });
+    const data = tasks.map(t => ({
+      title: t.title, status: t.status, priority: t.priority,
+      createdBy: userMap[t.createdBy?.toString()] || 'Unknown',
+      assignedTo: (t.assignedTo || []).map(id => userMap[id.toString()] || 'Unknown'),
+      dueDate: t.dueDate, createdAt: t.createdAt,
+    }));
+    res.json(data);
+  } catch (err) { res.status(500).json({ message: err.message }); }
+};
+
+const getFullReportJSON = async (req, res) => {
+  try {
+    const Task         = require('../models/Task');
+    const Announcement = require('../models/Announcement');
+    const Inquiry      = require('../models/Inquiry');
+    const TaskUpdate   = require('../models/TaskUpdate');
+    const RequiredDay  = require('../models/RequiredDay');
+
+    const supervisors = await User.find({ role: 'supervisor' }).select('name email isActive');
+    const supMap = {}; supervisors.forEach(s => { supMap[s._id.toString()] = s.name; });
+    const interns = await User.find({ role: 'intern' }).select('-passwordHash');
+    const tasks = await Task.find();
+    const announcements = await Announcement.find().sort({ createdAt: -1 });
+    const inquiries = await Inquiry.find().sort({ createdAt: -1 });
+    const updates = await TaskUpdate.countDocuments();
+    const requiredDays = await RequiredDay.countDocuments();
+
+    res.json({
+      generatedAt: new Date(),
+      users: {
+        totalSupervisors: supervisors.length, activeSupervisors: supervisors.filter(s => s.isActive).length,
+        totalInterns: interns.length, activeInterns: interns.filter(i => i.isActive).length,
+      },
+      tasks: {
+        total: tasks.length, pending: tasks.filter(t => t.status === 'pending').length,
+        inProgress: tasks.filter(t => t.status === 'in-progress').length, completed: tasks.filter(t => t.status === 'completed').length,
+      },
+      inquiries: {
+        total: inquiries.length, open: inquiries.filter(i => i.status === 'open').length,
+        replied: inquiries.filter(i => i.status === 'replied').length, closed: inquiries.filter(i => i.status === 'closed').length,
+      },
+      engagement: { announcements: announcements.length, taskUpdates: updates, requiredDays },
+      supervisorDetail: supervisors.map(s => ({
+        name: s.name, email: s.email, isActive: s.isActive,
+        internCount: interns.filter(i => i.createdBy?.toString() === s._id.toString()).length,
+      })),
+      internDetail: interns.map(i => ({
+        name: i.name, email: i.email, isActive: i.isActive,
+        supervisor: supMap[i.createdBy?.toString()] || 'N/A',
+        university: i.university || '', joined: i.createdAt,
+      })),
+    });
+  } catch (err) { res.status(500).json({ message: err.message }); }
+};
+
 module.exports = {
   seedSuperAdmin,
   createSupervisor,
@@ -500,4 +604,9 @@ module.exports = {
   exportHierarchyCSV,
   exportTasksCSV,
   exportFullReportCSV,
+  getSupervisorsJSON,
+  getInternsJSON,
+  getHierarchyJSON,
+  getTasksJSON,
+  getFullReportJSON,
 };

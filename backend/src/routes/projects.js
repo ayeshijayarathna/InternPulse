@@ -7,10 +7,15 @@ const {
   updateProject,
   deleteProject,
   getProjectStats,
+  getMyProjects,
 } = require('../controllers/projectController');
 const { protect, supervisorOnly } = require('../middleware/auth');
 
-router.use(protect, supervisorOnly);
+router.use(protect);
+
+router.get('/my', getMyProjects);
+
+router.use(supervisorOnly);
 
 router.route('/')
   .get(getAllProjects)
