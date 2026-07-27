@@ -16,6 +16,7 @@ const {
   uploadCV,
   downloadInternCV,
   getMe,
+  getMyAnalytics,
 } = require('../controllers/userController');
 
 const { protect, supervisorOnly, internOnly } = require('../middleware/auth');
@@ -51,6 +52,7 @@ const uploadCV_multer = multer({
 
 // Own profile 
 router.get('/me', protect, getMe);
+router.get('/my-analytics', protect, internOnly, getMyAnalytics);
 
 router.patch(
   '/profile',

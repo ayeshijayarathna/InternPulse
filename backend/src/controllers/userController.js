@@ -243,6 +243,111 @@ const downloadInternCV = async (req, res) => {
   }
 };
 
+// GET /api/users/my-analytics
+// Intern: own performance analytics for dashboard charts
+const getMyAnalytics = async (req, res) => {
+  try {
+    const Task         = require('../models/Task');
+    const TaskUpdate   = require('../models/TaskUpdate');
+    const Inquiry      = require('../models/Inquiry');
+    const RequiredDay  = require('../models/RequiredDay');
+    const Notification = require('../models/Notification');
+
+    const userId = req.user._id;
+
+    const [
+      totalTasks, pendingTasks, inProgressTasks, completedTasks,
+      lowPriority, mediumPriority, highPriority,
+      totalUpdates, updateCount, blockerCount, selfTaskCount,
+      totalInquiries, openInquiries, repliedInquiries, closedInquiries,
+      totalRequiredDays, confirmedDays, unavailableDays,
+      totalNotifications, unreadNotifications,
+    ] = await Promise.all([
+      Task.countDocuments({ assignedTo: userId }),
+      Task.countDocuments({ assignedTo: userId, status: 'pending' }),
+      Task.countDocuments({ assignedTo: userId, status: 'in-progress' }),
+      Task.countDocuments({ assignedTo: userId, status: 'completed' }),
+      Task.countDocuments({ assignedTo: userId, priority: 'low' }),
+      Task.countDocuments({ assignedTo: userId, priority: 'medium' }),
+      Task.countDocuments({ assignedTo: userId, priority: 'high' }),
+      TaskUpdate.countDocuments({ createdBy: userId }),
+      TaskUpdate.countDocuments({ createdBy: userId, type: 'update' }),
+      TaskUpdate.countDocuments({ createdBy: userId, type: 'blocker' }),
+      TaskUpdate.countDocuments({ createdBy: userId, type: 'self_task' }),
+      Inquiry.countDocuments({ createdBy: userId }),
+      Inquiry.countDocuments({ createdBy: userId, status: 'open' }),
+      Inquiry.countDocuments({ createdBy: userId, status: 'replied' }),
+      Inquiry.countDocuments({ createdBy: userId, status: 'closed' }),
+      RequiredDay.countDocuments({ intern: userId }),
+      RequiredDay.countDocuments({ intern: userId, status: 'confirmed' }),
+      RequiredDay.countDocuments({ intern: userId, status: 'unavailable' }),
+      Notification.countDocuments({ recipient: userId }),
+      Notification.countDocuments({ recipient: userId, isRead: false }),
+    ]);
+
+    // Submission timeline (last 30 days)
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const recentUpdates = await TaskUpdate.find({ createdBy: userId, createdAt: { $gte: thirtyDaysAgo } })
+      .select('createdAt type');
+    const submissionsByDay = {};
+    recentUpdates.forEach((u) => {
+      const day = u.createdAt.toISOString().split('T')[0];
+      if (!submissionsByDay[day]) submissionsByDay[day] = { updates: 0, blockers: 0, selfTasks: 0 };
+      if (u.type === 'update') submissionsByDay[day].updates++;
+      else if (u.type === 'blocker') submissionsByDay[day].blockers++;
+      else if (u.type === 'self_task') submissionsByDay[day].selfTasks++;
+    });
+    const submissionTimeline = Object.entries(submissionsByDay)
+      .map(([date, counts]) => ({ date, ...counts }))
+      .sort((a, b) => a.date.localeCompare(b.date));
+
+    // Task progress over time (created vs completed by week)
+    const myTasks = await Task.find({ assignedTo: userId }).select('createdAt status');
+    const tasksByWeek = {};
+    myTasks.forEach((t) => {
+      const d = new Date(t.createdAt);
+      const weekStart = new Date(d);
+      weekStart.setDate(d.getDate() - d.getDay());
+      const key = weekStart.toISOString().split('T')[0];
+      if (!tasksByWeek[key]) tasksByWeek[key] = { assigned: 0, completed: 0 };
+      tasksByWeek[key].assigned++;
+      if (t.status === 'completed') tasksByWeek[key].completed++;
+    });
+    const taskProgressTimeline = Object.entries(tasksByWeek)
+      .map(([date, counts]) => ({ date, ...counts }))
+      .sort((a, b) => a.date.localeCompare(b.date));
+
+    // Notification type distribution
+    const notificationTypes = await Notification.aggregate([
+      { $match: { recipient: userId } },
+      { $group: { _id: '$type', count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+    ]);
+
+    // Performance score (simple calculation)
+    const taskCompletionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+    const submissionScore = Math.min(totalUpdates * 10, 100);
+    const attendanceScore = totalRequiredDays > 0 ? Math.round((confirmedDays / totalRequiredDays) * 100) : 100;
+    const overallScore = Math.round((taskCompletionRate * 0.4 + submissionScore * 0.3 + attendanceScore * 0.3));
+
+    res.json({
+      tasks: { totalTasks, pendingTasks, inProgressTasks, completedTasks },
+      tasksByPriority: { low: lowPriority, medium: mediumPriority, high: highPriority },
+      updates: { totalUpdates, updateCount, blockerCount, selfTaskCount },
+      inquiries: { totalInquiries, openInquiries, repliedInquiries, closedInquiries },
+      requiredDays: { totalRequiredDays, confirmedDays, unavailableDays },
+      notifications: { totalNotifications, unreadNotifications },
+      submissionTimeline,
+      taskProgressTimeline,
+      notificationTypes: notificationTypes.map(n => ({ type: n._id, count: n.count })),
+      performance: { taskCompletionRate, submissionScore, attendanceScore, overallScore },
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 //GET /api/users/me
 const getMe = async (req, res) => {
   try {
@@ -257,5 +362,5 @@ const getMe = async (req, res) => {
 module.exports = {
   getInterns, createIntern, updateIntern, toggleInternStatus, deleteIntern,
   updateAvatar, deleteAvatar,
-  updateProfile, uploadCV, downloadInternCV, getMe,
+  updateProfile, uploadCV, downloadInternCV, getMe, getMyAnalytics,
 };
