@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { FiShield, FiUsers, FiLogOut, FiMenu, FiX, FiGrid, FiVolume2 } from 'react-icons/fi'; 
+import { FiShield, FiUsers, FiLogOut, FiMenu, FiX, FiGrid, FiVolume2, FiBarChart2, FiFileText } from 'react-icons/fi'; 
 
 import AvatarUpload           from '../../components/common/AvatarUpload';
 import SuperAdminOverview     from './sections/OverviewPage';
 import SupervisorsPage        from './sections/SupervisorsPage';
 import AnnouncementsPage      from './sections/superadmin_AnnouncementsPage';
+import ChartsPage             from './sections/ChartsPage';
+import ReportsPage            from './sections/ReportsPage';
 
 export default function SuperAdminDashboard() {
   const { user, logout, setUser } = useAuth();
@@ -17,17 +19,21 @@ export default function SuperAdminDashboard() {
   const handleLogout = () => { logout(); navigate('/sa-login'); };
 
   const navItems = [
-    { id: 'overview',       label: 'Overview',       icon: FiGrid    },
-    { id: 'supervisors',    label: 'Supervisors',    icon: FiUsers   },
-    { id: 'announcements',  label: 'Announcements',  icon: FiVolume2 }, 
+    { id: 'charts',         label: 'Analytics',       icon: FiBarChart2 },
+    { id: 'overview',       label: 'Overview',       icon: FiGrid      },
+    { id: 'supervisors',    label: 'Supervisors',    icon: FiUsers     },
+    { id: 'announcements',  label: 'Announcements',  icon: FiVolume2   }, 
+    { id: 'reports',        label: 'Reports',        icon: FiFileText  },
   ];
 
   const renderContent = () => {
     switch (activeTab) {
+      case 'charts':        return <ChartsPage />;
       case 'overview':      return <SuperAdminOverview setActiveTab={setActiveTab} />;
       case 'supervisors':   return <SupervisorsPage />;
       case 'announcements': return <AnnouncementsPage />;  
-      default:              return <SuperAdminOverview setActiveTab={setActiveTab} />;
+      case 'reports':       return <ReportsPage />;
+      default:              return <ChartsPage />;
     }
   };
 
