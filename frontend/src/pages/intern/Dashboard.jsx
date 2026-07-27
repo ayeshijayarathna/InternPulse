@@ -3,7 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import {
   FiGrid, FiCheckSquare, FiFileText, FiPlusCircle,
-  FiLogOut, FiMenu, FiX, FiBell, FiUser, FiMessageSquare, FiCalendar, FiBarChart2
+  FiLogOut, FiMenu, FiX, FiBell, FiUser, FiMessageSquare, FiCalendar, FiBarChart2, FiBook
 } from 'react-icons/fi';
 
 import { useNotifications }  from '../../context/NotificationContext';
@@ -17,6 +17,7 @@ import EditProfilePage       from './sections/EditProfilePage';
 import InquiryPage           from './sections/intern_InquiryPage'; 
 import InternRequiredDaysPage from './sections/InternRequiredDaysPage';
 import InternChartsPage      from './sections/InternChartsPage';
+import RecordBookPage        from './sections/RecordBookPage';
 
 export default function InternDashboard() {
   const { user, logout, setUser }         = useAuth();
@@ -30,6 +31,7 @@ export default function InternDashboard() {
   const navItems = [
     { id: 'analytics',      label: 'Analytics',       icon: FiBarChart2     },
     { id: 'overview',       label: 'Overview',        icon: FiGrid          },
+    { id: 'record-book',    label: 'Record Book',     icon: FiBook          },
     { id: 'tasks',          label: 'My Tasks',        icon: FiCheckSquare   },
     { id: 'submit',         label: 'Submit Update',   icon: FiPlusCircle    },
     { id: 'submissions',    label: 'My Submissions',  icon: FiFileText      },
@@ -43,6 +45,7 @@ export default function InternDashboard() {
     switch (activeTab) {
       case 'analytics':      return <InternChartsPage />;
       case 'overview':       return <OverviewPage setActiveTab={setActiveTab} />;
+      case 'record-book':    return <RecordBookPage />;
       case 'tasks':          return <MyTasksPage />;
       case 'submit':         return <SubmitUpdatePage />;
       case 'submissions':    return <MySubmissionsPage />;
