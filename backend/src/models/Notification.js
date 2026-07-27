@@ -22,6 +22,8 @@ const notificationSchema = new mongoose.Schema(
         'required_day_reply',        // intern: supervisor replied to their reason
         'admin_inquiry_received',    // supervisor: super admin sent inquiry
         'admin_inquiry_reply',       // super admin: supervisor replied
+        'project_assigned',          // intern: assigned to a project
+        'project_unassigned',        // intern: removed from a project
       ],
       required: true,
     },
@@ -34,6 +36,7 @@ const notificationSchema = new mongoose.Schema(
     announcementId: { type: mongoose.Schema.Types.ObjectId, ref: 'Announcement', default: null },
     inquiryId:      { type: mongoose.Schema.Types.ObjectId, ref: 'Inquiry',      default: null },
     requiredDayId:  { type: mongoose.Schema.Types.ObjectId, ref: 'RequiredDay',  default: null },
+    projectId:      { type: mongoose.Schema.Types.ObjectId, ref: 'Project',     default: null },
   },
   { timestamps: true }
 );

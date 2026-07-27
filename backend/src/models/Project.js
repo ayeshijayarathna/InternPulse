@@ -39,6 +39,16 @@ const projectSchema = new mongoose.Schema(
       type: String,
       default: '#7c3aed',
     },
+    githubLink: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+    supervisorGithubUsername: {
+      type: String,
+      default: '',
+      trim: true,
+    },
   },
   { timestamps: true }
 );

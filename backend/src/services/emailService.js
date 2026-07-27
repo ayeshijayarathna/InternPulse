@@ -95,7 +95,33 @@ const sendTaskAssignedMail = async ({ internName, internEmail, taskTitle, taskDe
   });
 };
 
-// ------------- 3. Deadline reminder mail (7 days before)----------------
+// ------------- 3. Project assigned mail ----------------
+const sendProjectAssignedMail = async ({ internName, internEmail, projectName, projectDescription, supervisorName, githubLink, supervisorGithubUsername, status }) => {
+  const html = htmlWrapper(`
+    <p>Hi <strong style="color:#f97316">${internName}</strong>,</p>
+    <p>You have been assigned to a new project by <strong>${supervisorName}</strong>:</p>
+    <div class="card">
+      <p><span class="label">Project</span><br/><span class="value">${projectName}</span></p>
+      ${projectDescription ? `<p><span class="label">Description</span><br/><span class="value">${projectDescription}</span></p>` : ''}
+      <p><span class="label">Status</span><br/>
+        <span class="badge" style="background:#7c3aed22;color:#a78bfa;border:1px solid #7c3aed44">${status?.toUpperCase()}</span>
+      </p>
+      ${githubLink ? `<p><span class="label">GitHub Repository</span><br/><a href="${githubLink}" style="color:#60a5fa;text-decoration:none;font-weight:600">${githubLink}</a></p>` : ''}
+      ${supervisorGithubUsername ? `<p><span class="label">Supervisor GitHub</span><br/><a href="https://github.com/${supervisorGithubUsername}" style="color:#60a5fa;text-decoration:none;font-weight:600">@${supervisorGithubUsername}</a></p>` : ''}
+    </div>
+    <p>Log in to your dashboard to view full project details and start contributing.</p>
+    <a class="btn" href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/intern/dashboard">View Project →</a>
+  `);
+
+  return transporter.sendMail({
+    from:    `"InternPulse" <${process.env.MAIL_USER}>`,
+    to:      internEmail,
+    subject: `📁 New Project Assigned: ${projectName}`,
+    html,
+  });
+};
+
+// ------------- 4. Deadline reminder mail (7 days before)----------------
 const sendDeadlineReminderMail = async ({ internName, internEmail, taskTitle, dueDate }) => {
   const html = htmlWrapper(`
     <p>Hi <strong style="color:#f97316">${internName}</strong>,</p>
@@ -116,4 +142,4 @@ const sendDeadlineReminderMail = async ({ internName, internEmail, taskTitle, du
   });
 };
 
-module.exports = { sendWelcomeMail, sendTaskAssignedMail, sendDeadlineReminderMail };
+module.exports = { sendWelcomeMail, sendTaskAssignedMail, sendProjectAssignedMail, sendDeadlineReminderMail };

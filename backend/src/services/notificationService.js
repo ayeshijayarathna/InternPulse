@@ -1,7 +1,7 @@
 const Notification = require('../models/Notification');
 
 // Helper: create notification + emit via Socket.IO 
-const createNotification = async (io, { recipient, type, title, message, taskId, updateId, announcementId, inquiryId, requiredDayId }) => {
+const createNotification = async (io, { recipient, type, title, message, taskId, updateId, announcementId, inquiryId, requiredDayId, projectId }) => {
   try {
     const notification = await Notification.create({
       recipient,
@@ -13,6 +13,7 @@ const createNotification = async (io, { recipient, type, title, message, taskId,
       announcementId: announcementId || null,
       inquiryId:      inquiryId      || null,
       requiredDayId:  requiredDayId  || null,
+      projectId:      projectId      || null,
     });
 
     // emit to the recipient's personal room (joined in server.js on socket connect)
@@ -28,6 +29,7 @@ const createNotification = async (io, { recipient, type, title, message, taskId,
         announcementId: notification.announcementId,
         inquiryId:      notification.inquiryId,
         requiredDayId:  notification.requiredDayId,
+        projectId:      notification.projectId,
         createdAt:      notification.createdAt,
       });
     }

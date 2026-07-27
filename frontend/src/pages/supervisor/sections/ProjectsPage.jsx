@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { FiFolder, FiPlus, FiEdit2, FiTrash2, FiUsers, FiCalendar, FiCheckCircle, FiClock, FiAlertCircle, FiX, FiChevronDown } from 'react-icons/fi';
+import { FiFolder, FiPlus, FiEdit2, FiTrash2, FiUsers, FiCalendar, FiCheckCircle, FiClock, FiAlertCircle, FiX, FiChevronDown, FiGithub } from 'react-icons/fi';
+import { SiGithub } from 'react-icons/si';
 import axiosInstance from '../../../api/axiosInstance';
 
 const STATUS_META = {
@@ -26,6 +27,8 @@ export default function ProjectsPage() {
     startDate: '',
     endDate: '',
     color: '#7c3aed',
+    githubLink: '',
+    supervisorGithubUsername: '',
   });
 
   useEffect(() => {
@@ -49,7 +52,7 @@ export default function ProjectsPage() {
 
   const openCreate = () => {
     setEditingProject(null);
-    setFormData({ name: '', description: '', assignedInterns: [], status: 'planning', startDate: '', endDate: '', color: '#7c3aed' });
+    setFormData({ name: '', description: '', assignedInterns: [], status: 'planning', startDate: '', endDate: '', color: '#7c3aed', githubLink: '', supervisorGithubUsername: '' });
     setShowModal(true);
   };
 
@@ -63,6 +66,8 @@ export default function ProjectsPage() {
       startDate: project.startDate ? project.startDate.split('T')[0] : '',
       endDate: project.endDate ? project.endDate.split('T')[0] : '',
       color: project.color || '#7c3aed',
+      githubLink: project.githubLink || '',
+      supervisorGithubUsername: project.supervisorGithubUsername || '',
     });
     setShowModal(true);
   };
@@ -209,6 +214,25 @@ export default function ProjectsPage() {
                     </span>
                   </div>
 
+                  {(project.githubLink || project.supervisorGithubUsername) && (
+                    <div className="flex flex-wrap items-center gap-3 mb-3 text-xs" style={{ color: 'var(--text-secondary)' }}>
+                      {project.githubLink && (
+                        <a href={project.githubLink} target="_blank" rel="noopener noreferrer"
+                           className="flex items-center gap-1 hover:underline"
+                           style={{ color: '#60a5fa' }}>
+                          <FiGithub className="w-3.5 h-3.5" />Repository
+                        </a>
+                      )}
+                      {project.supervisorGithubUsername && (
+                        <a href={`https://github.com/${project.supervisorGithubUsername}`} target="_blank" rel="noopener noreferrer"
+                           className="flex items-center gap-1 hover:underline"
+                           style={{ color: '#60a5fa' }}>
+                          <FiGithub className="w-3.5 h-3.5" />@{project.supervisorGithubUsername}
+                        </a>
+                      )}
+                    </div>
+                  )}
+
                   <div className="flex items-center justify-between pt-3 border-t" style={{ borderColor: 'var(--border)' }}>
                     <div className="flex items-center gap-2">
                       <FiUsers className="w-3.5 h-3.5" style={{ color: 'var(--text-muted)' }} />
@@ -320,6 +344,25 @@ export default function ProjectsPage() {
                   <label className="block text-sm font-semibold mb-1.5" style={{ color: 'var(--text-primary)' }}>End Date</label>
                   <input type="date" value={formData.endDate}
                          onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                         className="w-full px-3 py-2.5 rounded-xl border text-sm outline-none"
+                         style={{ background: 'var(--bg-surface)', borderColor: 'var(--border)', color: 'var(--text-primary)' }} />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-semibold mb-1.5" style={{ color: 'var(--text-primary)' }}>GitHub Repository Link</label>
+                  <input type="url" value={formData.githubLink}
+                         onChange={(e) => setFormData({ ...formData, githubLink: e.target.value })}
+                         placeholder="https://github.com/user/repo"
+                         className="w-full px-3 py-2.5 rounded-xl border text-sm outline-none"
+                         style={{ background: 'var(--bg-surface)', borderColor: 'var(--border)', color: 'var(--text-primary)' }} />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold mb-1.5" style={{ color: 'var(--text-primary)' }}>Supervisor GitHub Username</label>
+                  <input type="text" value={formData.supervisorGithubUsername}
+                         onChange={(e) => setFormData({ ...formData, supervisorGithubUsername: e.target.value })}
+                         placeholder="e.g. johndoe"
                          className="w-full px-3 py-2.5 rounded-xl border text-sm outline-none"
                          style={{ background: 'var(--bg-surface)', borderColor: 'var(--border)', color: 'var(--text-primary)' }} />
                 </div>
