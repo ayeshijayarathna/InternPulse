@@ -7,19 +7,23 @@ import { useNotifications } from '../../../context/NotificationContext';
 
 // Config 
 const TYPE_META = {
-  submission_received:      { icon: '📨', label: 'New Submission',   color: '#f97316' },
-  inquiry_received:         { icon: '📩', label: 'New Inquiry',      color: '#6366f1' },
-  announcement:             { icon: '📢', label: 'Announcement',     color: '#f59e0b' },
-  required_day_unavailable: { icon: '📅', label: 'Day Unavailable',  color: '#ef4444' },
+  submission_received:      { icon: '📨', label: 'New Submission',      color: '#f97316' },
+  inquiry_received:         { icon: '📩', label: 'New Inquiry',         color: '#6366f1' },
+  announcement:             { icon: '📢', label: 'Announcement',        color: '#f59e0b' },
+  required_day_unavailable: { icon: '📅', label: 'Day Unavailable',     color: '#ef4444' },
+  admin_inquiry_received:   { icon: '📩', label: 'Admin Inquiry',       color: '#dc2626' },
+  admin_inquiry_reply:      { icon: '💬', label: 'Admin Reply',         color: '#6366f1' },
 };
 
 const FILTERS = [
-  { id: 'all',                        label: 'All'           },
-  { id: 'unread',                     label: 'Unread'        },
-  { id: 'submission_received',        label: 'Submissions'   },
-  { id: 'inquiry_received',           label: 'Inquiries'     },
-  { id: 'announcement',               label: 'Announcements' },
-  { id: 'required_day_unavailable',   label: 'Office Days'   }, // ← නව
+  { id: 'all',                        label: 'All'             },
+  { id: 'unread',                     label: 'Unread'          },
+  { id: 'submission_received',        label: 'Submissions'     },
+  { id: 'inquiry_received',           label: 'Inquiries'       },
+  { id: 'admin_inquiry_received',     label: 'Admin Inquiries' },
+  { id: 'admin_inquiry_reply',        label: 'Admin Replies'   },
+  { id: 'announcement',               label: 'Announcements'   },
+  { id: 'required_day_unavailable',   label: 'Office Days'     },
 ];
 
 function timeAgo(date) {
@@ -45,6 +49,8 @@ export default function SupervisorNotificationsPage() {
     'inquiry_received',
     'announcement',
     'required_day_unavailable',
+    'admin_inquiry_received',
+    'admin_inquiry_reply',
   ];
   const supervisorNotifications = notifications.filter(n => supervisorTypes.includes(n.type));
 
