@@ -10,6 +10,12 @@ const {
   toggleSupervisorStatus,
   deleteSupervisor,
   getSupervisorInterns,
+  getAnalytics,
+  exportSupervisorsCSV,
+  exportInternsCSV,
+  exportHierarchyCSV,
+  exportTasksCSV,
+  exportFullReportCSV,
 } = require('../controllers/superAdminController');
 
 const { protect, superAdminOnly } = require('../middleware/auth');
@@ -35,5 +41,15 @@ router.patch('/supervisors/:id',
 router.patch('/supervisors/:id/toggle',    protect, superAdminOnly, toggleSupervisorStatus);
 router.delete('/supervisors/:id',          protect, superAdminOnly, deleteSupervisor);
 router.get('/supervisors/:id/interns',     protect, superAdminOnly, getSupervisorInterns);
+
+// Analytics
+router.get('/analytics',                   protect, superAdminOnly, getAnalytics);
+
+// Reports / CSV exports
+router.get('/reports/supervisors',         protect, superAdminOnly, exportSupervisorsCSV);
+router.get('/reports/interns',             protect, superAdminOnly, exportInternsCSV);
+router.get('/reports/hierarchy',           protect, superAdminOnly, exportHierarchyCSV);
+router.get('/reports/tasks',               protect, superAdminOnly, exportTasksCSV);
+router.get('/reports/full',                protect, superAdminOnly, exportFullReportCSV);
 
 module.exports = router;
