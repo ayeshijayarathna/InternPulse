@@ -4,7 +4,7 @@ import {
   FiMail, FiCalendar, FiEdit2, FiTrash2,
   FiX, FiRefreshCw, FiSearch, FiDownload,
   FiEye, FiEyeOff, FiCopy, FiCheck, FiShield,
-  FiMapPin, FiBook, FiFileText, FiUser, FiCheckCircle
+  FiMapPin, FiBook, FiFileText, FiUser, FiCheckCircle, FiGithub
 } from 'react-icons/fi';
 import axiosInstance from '../../../api/axiosInstance';
 
@@ -244,6 +244,7 @@ function InternProfileModal({ intern, onClose }) {
               { icon: FiMail,     label: 'Email',            value: intern.email },
               { icon: FiBook,     label: 'University',       value: intern.university || '—' },
               { icon: FiMapPin,   label: 'Hometown',         value: intern.hometown   || '—' },
+              ...(intern.githubUsername ? [{ icon: FiGithub, label: 'GitHub', value: `@${intern.githubUsername}`, href: `https://github.com/${intern.githubUsername}` }] : []),
               { icon: FiCalendar, label: 'Internship Start', value: fmt(intern.internshipStart) },
               { icon: FiCalendar, label: 'Internship End',   value: fmt(intern.internshipEnd)   },
               { icon: FiCalendar, label: 'Joined',           value: fmt(intern.createdAt) },
@@ -253,7 +254,14 @@ function InternProfileModal({ intern, onClose }) {
                 <row.icon className="w-4 h-4 mt-0.5 shrink-0" style={{ color: 'var(--admin-primary)' }} />
                 <div>
                   <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>{row.label}</div>
-                  <div className="text-sm font-semibold text-white">{row.value}</div>
+                  {row.href ? (
+                    <a href={row.href} target="_blank" rel="noopener noreferrer"
+                       className="text-sm font-semibold hover:underline" style={{ color: '#60a5fa' }}>
+                      {row.value}
+                    </a>
+                  ) : (
+                    <div className="text-sm font-semibold text-white">{row.value}</div>
+                  )}
                 </div>
               </div>
             ))}
@@ -491,6 +499,13 @@ export default function InternsPage() {
                 {intern.hometown && (
                   <div className="flex items-center gap-2 text-xs" style={{ color: 'var(--text-secondary)' }}>
                     <FiMapPin className="w-3.5 h-3.5 shrink-0" /><span>{intern.hometown}</span>
+                  </div>
+                )}
+                {intern.githubUsername && (
+                  <div className="flex items-center gap-2 text-xs" style={{ color: '#60a5fa' }}>
+                    <FiGithub className="w-3.5 h-3.5 shrink-0" />
+                    <a href={`https://github.com/${intern.githubUsername}`} target="_blank" rel="noopener noreferrer"
+                       className="hover:underline truncate">@{intern.githubUsername}</a>
                   </div>
                 )}
                 {(intern.internshipStart || intern.internshipEnd) && (

@@ -162,6 +162,16 @@ export default function TasksPage() {
     }
   };
 
+  // Filter interns based on selected project
+  const availableInterns = formData.projectId
+    ? (() => {
+        const project = projects.find((p) => p._id === formData.projectId);
+        if (!project) return interns;
+        const projectInternIds = new Set(project.assignedInterns.map((i) => typeof i === 'object' ? i._id : i));
+        return interns.filter((i) => projectInternIds.has(i._id));
+      })()
+    : interns;
+
   const resetForm = () => {
     setFormData({ title: '', description: '', priority: 'medium', status: 'pending', dueDate: '', assignedTo: [], projectId: '' });
   };
@@ -484,7 +494,7 @@ export default function TasksPage() {
                   <label className="block text-sm font-semibold text-[var(--text-secondary)] mb-2">Project</label>
                   <select
                     value={formData.projectId}
-                    onChange={(e) => setFormData({ ...formData, projectId: e.target.value })}
+                    onChange={(e) => setFormData({ ...formData, projectId: e.target.value, assignedTo: [] })}
                     className="w-full px-4 py-2.5 rounded-xl border outline-none transition-all text-white"
                     style={{ background: 'var(--bg-surface)', borderColor: 'var(--border)' }}
                   >
@@ -548,8 +558,18 @@ export default function TasksPage() {
                       </span>
                     )}
                   </label>
+                  {formData.projectId && (
+                    <p className="text-xs mb-2" style={{ color: 'var(--text-muted)' }}>
+                      Showing {availableInterns.length} intern{availableInterns.length !== 1 ? 's' : ''} assigned to this project
+                    </p>
+                  )}
+                  {!formData.projectId && (
+                    <p className="text-xs mb-2" style={{ color: 'var(--text-muted)' }}>
+                      Select a project first to limit assignees, or assign to all interns
+                    </p>
+                  )}
                   <MultiSelectInterns
-                    interns={interns}
+                    interns={availableInterns}
                     selected={formData.assignedTo}
                     onChange={(val) => setFormData({ ...formData, assignedTo: val })}
                   />

@@ -39,8 +39,9 @@ const userSchema = new mongoose.Schema(
     },
 
     //Intern profile fields (editable by intern)
-    university: { type: String, default: null, trim: true },
-    hometown:   { type: String, default: null, trim: true },
+    university:     { type: String, default: null, trim: true },
+    hometown:       { type: String, default: null, trim: true },
+    githubUsername: { type: String, default: '', trim: true },
     cv: {
       filename:     { type: String, default: null }, // saved filename on disk
       originalName: { type: String, default: null },

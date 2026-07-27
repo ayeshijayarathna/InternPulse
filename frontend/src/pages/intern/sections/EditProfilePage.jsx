@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import {
   FiUser, FiMapPin, FiBook, FiUpload, FiSave,
-  FiCalendar, FiFileText, FiCheck, FiAlertCircle, FiCamera
+  FiCalendar, FiFileText, FiCheck, FiAlertCircle, FiCamera, FiGithub
 } from 'react-icons/fi';
 import axiosInstance from '../../../api/axiosInstance';
 import { useAuth } from '../../../context/AuthContext';
@@ -21,6 +21,7 @@ export default function EditProfilePage() {
   // form state
   const [university, setUniversity] = useState('');
   const [hometown,   setHometown]   = useState('');
+  const [githubUsername, setGithubUsername] = useState('');
   const [avatarFile, setAvatarFile] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState(null);
   const [cvFile,     setCvFile]     = useState(null);
@@ -35,6 +36,7 @@ export default function EditProfilePage() {
         setProfile(res.data);
         setUniversity(res.data.university || '');
         setHometown(res.data.hometown || '');
+        setGithubUsername(res.data.githubUsername || '');
       })
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -67,6 +69,7 @@ export default function EditProfilePage() {
       const fd = new FormData();
       fd.append('university', university);
       fd.append('hometown',   hometown);
+      fd.append('githubUsername', githubUsername);
       if (avatarFile) fd.append('avatar', avatarFile);
 
       const res = await axiosInstance.patch('/users/profile', fd, {
@@ -244,6 +247,29 @@ export default function EditProfilePage() {
             className="w-full mt-1 px-4 py-2.5 rounded-xl text-sm text-white placeholder-gray-600 border outline-none transition-all focus:border-[var(--intern-primary)]"
             style={{ background: 'rgba(255,255,255,0.04)', borderColor: 'var(--border)' }}
           />
+        </div>
+
+        <div>
+          <label className="text-xs font-semibold uppercase tracking-wider"
+                 style={{ color: 'var(--text-secondary)' }}>GitHub Username</label>
+          <div className="relative">
+            <FiGithub className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--text-muted)' }} />
+            <input
+              type="text"
+              value={githubUsername}
+              onChange={e => setGithubUsername(e.target.value)}
+              placeholder="e.g. johndoe"
+              className="w-full mt-1 pl-10 pr-4 py-2.5 rounded-xl text-sm text-white placeholder-gray-600 border outline-none transition-all focus:border-[var(--intern-primary)]"
+              style={{ background: 'rgba(255,255,255,0.04)', borderColor: 'var(--border)' }}
+            />
+          </div>
+          {githubUsername && (
+            <a href={`https://github.com/${githubUsername}`} target="_blank" rel="noopener noreferrer"
+               className="inline-flex items-center gap-1 mt-1.5 text-xs hover:underline"
+               style={{ color: '#60a5fa' }}>
+              github.com/{githubUsername}
+            </a>
+          )}
         </div>
 
         <button
