@@ -3,10 +3,12 @@ import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import {
   FiGrid, FiCheckSquare, FiFileText, FiPlusCircle,
-  FiLogOut, FiMenu, FiX, FiBell, FiUser, FiMessageSquare, FiCalendar, FiBarChart2, FiBook
+  FiLogOut, FiMenu, FiX, FiBell, FiUser, FiMessageSquare, FiCalendar, FiBarChart2, FiBook,
+  FiSun, FiMoon
 } from 'react-icons/fi';
 
 import { useNotifications }  from '../../context/NotificationContext';
+import { useTheme }          from '../../context/ThemeContext';
 import AvatarUpload          from '../../components/common/AvatarUpload';
 import MyTasksPage           from './sections/MyTasksPage';
 import MySubmissionsPage     from './sections/MySubmissionsPage';
@@ -14,7 +16,7 @@ import SubmitUpdatePage      from './sections/SubmitUpdatePage';
 import OverviewPage          from './sections/OverviewPage';
 import NotificationsPage     from './sections/intern_NotificationsPage';
 import EditProfilePage       from './sections/EditProfilePage';
-import InquiryPage           from './sections/intern_InquiryPage'; 
+import InquiryPage           from './sections/intern_InquiryPage';
 import InternRequiredDaysPage from './sections/InternRequiredDaysPage';
 import InternChartsPage      from './sections/InternChartsPage';
 import RecordBookPage        from './sections/RecordBookPage';
@@ -22,6 +24,7 @@ import RecordBookPage        from './sections/RecordBookPage';
 export default function InternDashboard() {
   const { user, logout, setUser }         = useAuth();
   const { unreadCount }                   = useNotifications();
+  const { theme, toggleTheme }            = useTheme();
   const navigate                          = useNavigate();
   const [activeTab, setActiveTab]         = useState('overview');
   const [sidebarOpen, setSidebarOpen]     = useState(false);
@@ -35,7 +38,7 @@ export default function InternDashboard() {
     { id: 'tasks',          label: 'My Tasks',        icon: FiCheckSquare   },
     { id: 'submit',         label: 'Submit Update',   icon: FiPlusCircle    },
     { id: 'submissions',    label: 'My Submissions',  icon: FiFileText      },
-    { id: 'inquiry',        label: 'My Inquiries',    icon: FiMessageSquare }, 
+    { id: 'inquiry',        label: 'My Inquiries',    icon: FiMessageSquare },
     { id: 'required-days',  label: 'Required Days',   icon: FiCalendar      },
     { id: 'notifications',  label: 'Notifications',   icon: FiBell, badge: unreadCount },
     { id: 'edit-profile',   label: 'Edit Profile',    icon: FiUser          },
@@ -49,7 +52,7 @@ export default function InternDashboard() {
       case 'tasks':          return <MyTasksPage />;
       case 'submit':         return <SubmitUpdatePage />;
       case 'submissions':    return <MySubmissionsPage />;
-      case 'inquiry':        return <InquiryPage />;      
+      case 'inquiry':        return <InquiryPage />;
       case 'required-days':  return <InternRequiredDaysPage />;
       case 'notifications':  return <NotificationsPage />;
       case 'edit-profile':   return <EditProfilePage />;
@@ -66,14 +69,18 @@ export default function InternDashboard() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 rounded-lg hover:bg-white/5">
-              {sidebarOpen ? <FiX className="w-5 h-5 text-white" /> : <FiMenu className="w-5 h-5 text-white" />}
+              {sidebarOpen ? <FiX className="w-5 h-5" style={{ color: 'var(--text-primary)' }} /> : <FiMenu className="w-5 h-5" style={{ color: 'var(--text-primary)' }} />}
             </button>
-            <h1 className="text-lg font-bold text-white" style={{ fontFamily: 'var(--font-display)' }}>InternPulse</h1>
+            <h1 className="text-lg font-bold" style={{ fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}>InternPulse</h1>
           </div>
           <div className="flex items-center gap-2">
+            <button onClick={toggleTheme} className="p-2 rounded-xl hover:bg-white/5 transition-all"
+                    style={{ color: 'var(--text-secondary)' }}>
+              {theme === 'dark' ? <FiSun className="w-5 h-5" /> : <FiMoon className="w-5 h-5" />}
+            </button>
             <button onClick={() => { setActiveTab('notifications'); setSidebarOpen(false); }}
                     className="relative p-2 rounded-xl hover:bg-white/5 transition-all">
-              <FiBell className="w-5 h-5 text-white" />
+              <FiBell className="w-5 h-5" style={{ color: 'var(--text-primary)' }} />
               {unreadCount > 0 && (
                 <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] rounded-full flex items-center justify-center text-[10px] font-bold text-white"
                       style={{ background: 'var(--intern-primary)', padding: '0 4px' }}>
@@ -116,7 +123,7 @@ export default function InternDashboard() {
                   onUpdate={(updated) => setUser?.(updated)}
                 />
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-bold text-white truncate">{user?.name}</div>
+                  <div className="text-sm font-bold truncate" style={{ color: 'var(--text-primary)' }}>{user?.name}</div>
                   <div className="text-xs truncate" style={{ color: 'var(--text-secondary)' }}>{user?.email}</div>
                   <div className="mt-1 flex items-center gap-2">
                     <span className="inline-block px-2 py-0.5 rounded text-xs font-semibold text-white"
@@ -152,7 +159,13 @@ export default function InternDashboard() {
               </div>
             </nav>
 
-            <div className="p-4 border-t" style={{ borderColor: 'var(--border)' }}>
+            <div className="p-4 border-t space-y-2" style={{ borderColor: 'var(--border)' }}>
+              <button onClick={toggleTheme}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-semibold transition-all hover:bg-white/5"
+                      style={{ color: 'var(--text-secondary)' }}>
+                {theme === 'dark' ? <FiSun className="w-5 h-5" /> : <FiMoon className="w-5 h-5" />}
+                <span>{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
+              </button>
               <button onClick={handleLogout}
                       className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all hover:bg-red-500/10 text-red-400">
                 <FiLogOut className="w-5 h-5" /><span>Sign Out</span>

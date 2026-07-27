@@ -3,23 +3,27 @@ import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import {
   FiActivity, FiUsers, FiCheckSquare, FiFileText,
-  FiLogOut, FiMenu, FiX, FiBell, FiMessageSquare, FiVolume2, FiCalendar
+  FiLogOut, FiMenu, FiX, FiBell, FiMessageSquare, FiVolume2, FiCalendar,
+  FiSun, FiMoon
 } from 'react-icons/fi';
 
 import { useNotifications }  from '../../context/NotificationContext';
+import { useTheme }          from '../../context/ThemeContext';
 import AvatarUpload          from '../../components/common/AvatarUpload';
 import OverviewPage          from './sections/OverviewPage';
 import InternsPage           from './sections/InternsPage';
 import TasksPage             from './sections/TasksPage';
 import SubmissionsPage       from './sections/SubmissionsPage';
 import NotificationsPage     from './sections/supervisor_NotificationsPage';
-import AnnouncementsPage     from './sections/supervisor_AnnouncementsPage';    
-import InquiriesPage         from './sections/supervisor_InquiriesPage';      
+import AnnouncementsPage     from './sections/supervisor_AnnouncementsPage';
+import InquiriesPage         from './sections/supervisor_InquiriesPage';
+import AdminInquiriesPage    from './sections/SupervisorAdminInquiriesPage';
 import SupervisorRequiredDaysPage from './sections/SupervisorRequiredDaysPage';
 
 export default function SupervisorDashboard() {
   const { user, logout, setUser }      = useAuth();
   const { unreadCount }                = useNotifications();
+  const { theme, toggleTheme }         = useTheme();
   const navigate                       = useNavigate();
   const [activeTab, setActiveTab]      = useState('overview');
   const [sidebarOpen, setSidebarOpen]  = useState(false);
@@ -31,8 +35,9 @@ export default function SupervisorDashboard() {
     { id: 'interns',        label: 'Interns',         icon: FiUsers         },
     { id: 'tasks',          label: 'Tasks',           icon: FiCheckSquare   },
     { id: 'submissions',    label: 'Submissions',     icon: FiFileText      },
-    { id: 'inquiries',      label: 'Inquiries',       icon: FiMessageSquare }, 
-    { id: 'announcements',  label: 'Announcements',   icon: FiVolume2       }, 
+    { id: 'inquiries',      label: 'Inquiries',       icon: FiMessageSquare },
+    { id: 'admin-inquiries', label: 'Admin Inquiries', icon: FiMessageSquare },
+    { id: 'announcements',  label: 'Announcements',   icon: FiVolume2       },
     { id: 'required-days',  label: 'Required Days',   icon: FiCalendar      },
     { id: 'notifications',  label: 'Notifications',   icon: FiBell, badge: unreadCount },
   ];
@@ -43,8 +48,9 @@ export default function SupervisorDashboard() {
       case 'interns':       return <InternsPage />;
       case 'tasks':         return <TasksPage />;
       case 'submissions':   return <SubmissionsPage />;
-      case 'inquiries':     return <InquiriesPage />;         
-      case 'announcements': return <AnnouncementsPage />;     
+      case 'inquiries':      return <InquiriesPage />;
+      case 'admin-inquiries': return <AdminInquiriesPage />;
+      case 'announcements':  return <AnnouncementsPage />;
       case 'required-days': return <SupervisorRequiredDaysPage />;
       case 'notifications': return <NotificationsPage />;
       default:              return <OverviewPage />;
@@ -60,16 +66,20 @@ export default function SupervisorDashboard() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 rounded-lg hover:bg-white/5">
-              {sidebarOpen ? <FiX className="w-5 h-5 text-white" /> : <FiMenu className="w-5 h-5 text-white" />}
+              {sidebarOpen ? <FiX className="w-5 h-5" style={{ color: 'var(--text-primary)' }} /> : <FiMenu className="w-5 h-5" style={{ color: 'var(--text-primary)' }} />}
             </button>
-            <h1 className="text-lg font-bold text-white" style={{ fontFamily: 'var(--font-display)' }}>
+            <h1 className="text-lg font-bold" style={{ fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}>
               InternPulse
             </h1>
           </div>
           <div className="flex items-center gap-2">
+            <button onClick={toggleTheme} className="p-2 rounded-xl hover:bg-white/5 transition-all"
+                    style={{ color: 'var(--text-secondary)' }}>
+              {theme === 'dark' ? <FiSun className="w-5 h-5" /> : <FiMoon className="w-5 h-5" />}
+            </button>
             <button onClick={() => { setActiveTab('notifications'); setSidebarOpen(false); }}
                     className="relative p-2 rounded-xl hover:bg-white/5 transition-all">
-              <FiBell className="w-5 h-5 text-white" />
+              <FiBell className="w-5 h-5" style={{ color: 'var(--text-primary)' }} />
               {unreadCount > 0 && (
                 <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] rounded-full flex items-center justify-center text-[10px] font-bold text-black"
                       style={{ background: 'var(--admin-primary)', padding: '0 4px' }}>
@@ -110,7 +120,7 @@ export default function SupervisorDashboard() {
                   onUpdate={(updated) => setUser?.(updated)}
                 />
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-bold text-white truncate">{user?.name}</div>
+                  <div className="text-sm font-bold truncate" style={{ color: 'var(--text-primary)' }}>{user?.name}</div>
                   <div className="text-xs truncate" style={{ color: 'var(--text-secondary)' }}>{user?.email}</div>
                   <div className="mt-1 flex items-center gap-2">
                     <span className="inline-block px-2 py-0.5 rounded text-xs font-semibold"
@@ -146,7 +156,13 @@ export default function SupervisorDashboard() {
               </div>
             </nav>
 
-            <div className="p-4 border-t" style={{ borderColor: 'var(--border)' }}>
+            <div className="p-4 border-t space-y-2" style={{ borderColor: 'var(--border)' }}>
+              <button onClick={toggleTheme}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-semibold transition-all hover:bg-white/5"
+                      style={{ color: 'var(--text-secondary)' }}>
+                {theme === 'dark' ? <FiSun className="w-5 h-5" /> : <FiMoon className="w-5 h-5" />}
+                <span>{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
+              </button>
               <button onClick={handleLogout}
                       className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all hover:bg-red-500/10 text-red-400">
                 <FiLogOut className="w-5 h-5" /><span>Sign Out</span>
