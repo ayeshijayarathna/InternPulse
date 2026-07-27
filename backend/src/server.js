@@ -57,6 +57,7 @@ app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/announcements', require('./routes/announcements'));
 app.use('/api/inquiries',     require('./routes/inquiries'));    
 app.use('/api/required-days', require('./routes/requiredDays'));
+app.use('/api/record-book',  require('./routes/recordBook'));
 
 
 // Protected file download
