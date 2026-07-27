@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { 
   FiUsers, FiCheckSquare, FiFileText, FiTrendingUp, 
   FiAlertCircle, FiClock, FiActivity, FiBarChart2 
@@ -59,7 +59,7 @@ export default function OverviewPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
-        <div className="w-8 h-8 border-4 border-t-[var(--admin-primary)] border-gray-700 rounded-full animate-spin"></div>
+        <div className="w-8 h-8 border-4 border-t-[var(--supervisor-primary)] border-gray-700 rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -68,7 +68,7 @@ export default function OverviewPage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[var(--admin-primary)] to-[var(--admin-secondary)] flex items-center justify-center">
+        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[var(--supervisor-primary)] to-[var(--supervisor-secondary)] flex items-center justify-center">
           <FiActivity className="w-6 h-6 text-white" />
         </div>
         <div>
@@ -84,7 +84,7 @@ export default function OverviewPage() {
       {/* Main Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Total Interns */}
-        <div className="p-5 rounded-2xl border hover:border-[var(--admin-primary)] transition-all group" 
+        <div className="p-5 rounded-2xl border hover:border-[var(--supervisor-primary)] transition-all group" 
              style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
           <div className="flex items-center justify-between mb-4">
             <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -109,7 +109,7 @@ export default function OverviewPage() {
         </div>
 
         {/* Total Tasks */}
-        <div className="p-5 rounded-2xl border hover:border-[var(--admin-primary)] transition-all group" 
+        <div className="p-5 rounded-2xl border hover:border-[var(--supervisor-primary)] transition-all group" 
              style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
           <div className="flex items-center justify-between mb-4">
             <div className="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -134,7 +134,7 @@ export default function OverviewPage() {
         </div>
 
         {/* Pending Tasks */}
-        <div className="p-5 rounded-2xl border hover:border-[var(--admin-primary)] transition-all group" 
+        <div className="p-5 rounded-2xl border hover:border-[var(--supervisor-primary)] transition-all group" 
              style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
           <div className="flex items-center justify-between mb-4">
             <div className="w-12 h-12 rounded-xl bg-orange-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -159,7 +159,7 @@ export default function OverviewPage() {
         </div>
 
         {/* Total Submissions */}
-        <div className="p-5 rounded-2xl border hover:border-[var(--admin-primary)] transition-all group" 
+        <div className="p-5 rounded-2xl border hover:border-[var(--supervisor-primary)] transition-all group" 
              style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
           <div className="flex items-center justify-between mb-4">
             <div className="w-12 h-12 rounded-xl bg-green-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -186,7 +186,7 @@ export default function OverviewPage() {
         {/* Task Status Chart */}
         <div className="p-6 rounded-2xl border" style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
           <div className="flex items-center gap-3 mb-6">
-            <FiBarChart2 className="w-5 h-5 text-[var(--admin-primary)]" />
+            <FiBarChart2 className="w-5 h-5 text-[var(--supervisor-primary)]" />
             <h3 className="text-lg font-bold text-white" style={{ fontFamily: 'var(--font-display)' }}>
               Task Status Breakdown
             </h3>
@@ -219,7 +219,7 @@ export default function OverviewPage() {
         {/* Quick Stats */}
         <div className="p-6 rounded-2xl border" style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
           <div className="flex items-center gap-3 mb-6">
-            <FiTrendingUp className="w-5 h-5 text-[var(--admin-primary)]" />
+            <FiTrendingUp className="w-5 h-5 text-[var(--supervisor-primary)]" />
             <h3 className="text-lg font-bold text-white" style={{ fontFamily: 'var(--font-display)' }}>
               Quick Stats
             </h3>
@@ -246,7 +246,7 @@ export default function OverviewPage() {
       {/* Recent Submissions */}
       <div className="p-6 rounded-2xl border" style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
         <div className="flex items-center gap-3 mb-6">
-          <FiFileText className="w-5 h-5 text-[var(--admin-primary)]" />
+          <FiFileText className="w-5 h-5 text-[var(--supervisor-primary)]" />
           <h3 className="text-lg font-bold text-white" style={{ fontFamily: 'var(--font-display)' }}>
             Recent Submissions
           </h3>
@@ -261,7 +261,7 @@ export default function OverviewPage() {
             {stats.recentSubmissions.map((submission) => (
               <div 
                 key={submission._id}
-                className="flex items-start gap-4 p-4 rounded-xl border hover:border-[var(--admin-primary)] transition-all"
+                className="flex items-start gap-4 p-4 rounded-xl border hover:border-[var(--supervisor-primary)] transition-all"
                 style={{ background: 'var(--bg-surface)', borderColor: 'var(--border)' }}
               >
                 <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${

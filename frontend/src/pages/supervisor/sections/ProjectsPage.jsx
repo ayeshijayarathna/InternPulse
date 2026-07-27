@@ -131,7 +131,7 @@ export default function ProjectsPage() {
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 rounded-xl flex items-center justify-center"
-               style={{ background: 'linear-gradient(135deg, #7c3aed, #5b21b6)' }}>
+               style={{ background: 'linear-gradient(135deg, var(--supervisor-primary), var(--supervisor-secondary))' }}>
             <FiFolder className="w-6 h-6 text-white" />
           </div>
           <div>
@@ -141,7 +141,7 @@ export default function ProjectsPage() {
         </div>
         <button onClick={openCreate}
                 className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-white transition-all hover:opacity-90"
-                style={{ background: 'linear-gradient(135deg, #7c3aed, #5b21b6)' }}>
+                style={{ background: 'linear-gradient(135deg, var(--supervisor-primary), var(--supervisor-secondary))' }}>
           <FiPlus className="w-4 h-4" />New Project
         </button>
       </div>
@@ -394,7 +394,7 @@ export default function ProjectsPage() {
                 </button>
                 <button type="submit" disabled={actionLoading}
                         className="flex-1 px-4 py-2.5 rounded-xl font-semibold text-white transition-all hover:opacity-90 disabled:opacity-50"
-                        style={{ background: 'linear-gradient(135deg, #7c3aed, #5b21b6)' }}>
+                        style={{ background: 'linear-gradient(135deg, var(--supervisor-primary), var(--supervisor-secondary))' }}>
                   {actionLoading ? 'Saving...' : editingProject ? 'Update' : 'Create Project'}
                 </button>
               </div>

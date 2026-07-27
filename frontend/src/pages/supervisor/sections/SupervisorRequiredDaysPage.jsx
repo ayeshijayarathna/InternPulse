@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+﻿import { useState, useEffect, useCallback } from 'react';
 import {
   FiCalendar, FiChevronLeft, FiChevronRight, FiX, FiPlus,
   FiAlertTriangle, FiCheck, FiSend, FiUserCheck, FiTrash2, FiUsers,
@@ -186,7 +186,7 @@ export default function SupervisorRequiredDaysPage() {
       <div className="flex items-center gap-3">
         <div
           className="w-12 h-12 rounded-2xl flex items-center justify-center"
-          style={{ background: 'linear-gradient(135deg, var(--admin-primary), var(--admin-secondary))' }}
+          style={{ background: 'linear-gradient(135deg, var(--supervisor-primary), var(--supervisor-secondary))' }}
         >
           <FiCalendar className="w-6 h-6 text-white" />
         </div>
@@ -239,7 +239,7 @@ export default function SupervisorRequiredDaysPage() {
                   className="aspect-square rounded-xl flex flex-col items-center justify-center gap-1 transition-all relative"
                   style={{
                     background: selected
-                      ? 'linear-gradient(135deg, var(--admin-primary), var(--admin-secondary))'
+                      ? 'linear-gradient(135deg, var(--supervisor-primary), var(--supervisor-secondary))'
                       : isToday(date)
                         ? 'rgba(245,158,11,0.1)'
                         : 'var(--bg-surface)',
@@ -297,7 +297,7 @@ export default function SupervisorRequiredDaysPage() {
                 <button
                   onClick={openAssignModal}
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:opacity-90"
-                  style={{ background: 'rgba(245,158,11,0.1)', color: 'var(--admin-primary)', border: '1px solid rgba(245,158,11,0.25)' }}
+                  style={{ background: 'rgba(245,158,11,0.1)', color: 'var(--supervisor-primary)', border: '1px solid rgba(245,158,11,0.25)' }}
                 >
                   <FiPlus className="w-3.5 h-3.5" /> Assign
                 </button>
@@ -305,7 +305,7 @@ export default function SupervisorRequiredDaysPage() {
 
               {loadingDay ? (
                 <div className="flex-1 flex items-center justify-center">
-                  <div className="w-6 h-6 rounded-full border-2 animate-spin" style={{ borderColor: 'var(--admin-primary)', borderTopColor: 'transparent' }} />
+                  <div className="w-6 h-6 rounded-full border-2 animate-spin" style={{ borderColor: 'var(--supervisor-primary)', borderTopColor: 'transparent' }} />
                 </div>
               ) : dayEntries.length === 0 ? (
                 <div className="flex-1 flex flex-col items-center justify-center text-center">
@@ -330,7 +330,7 @@ export default function SupervisorRequiredDaysPage() {
                           ) : (
                             <div
                               className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0"
-                              style={{ background: 'linear-gradient(135deg, var(--admin-primary), var(--admin-secondary))' }}
+                              style={{ background: 'linear-gradient(135deg, var(--supervisor-primary), var(--supervisor-secondary))' }}
                             >
                               {entry.intern?.name?.charAt(0).toUpperCase()}
                             </div>
@@ -365,7 +365,7 @@ export default function SupervisorRequiredDaysPage() {
 
                       {entry.supervisorReply && (
                         <div className="mt-2 p-2.5 rounded-lg text-xs flex items-start gap-1.5" style={{ background: 'rgba(245,158,11,0.08)', color: 'var(--text-secondary)' }}>
-                          <FiUserCheck className="w-3 h-3 mt-0.5 shrink-0" style={{ color: 'var(--admin-primary)' }} />
+                          <FiUserCheck className="w-3 h-3 mt-0.5 shrink-0" style={{ color: 'var(--supervisor-primary)' }} />
                           <span>You replied: "{entry.supervisorReply}"</span>
                         </div>
                       )}
@@ -384,7 +384,7 @@ export default function SupervisorRequiredDaysPage() {
                             onClick={() => handleSendReply(entry._id)}
                             disabled={replyingId === entry._id || !replyDrafts[entry._id]?.trim()}
                             className="p-1.5 rounded-lg shrink-0 transition-all disabled:opacity-40"
-                            style={{ background: 'rgba(245,158,11,0.12)', color: 'var(--admin-primary)' }}
+                            style={{ background: 'rgba(245,158,11,0.12)', color: 'var(--supervisor-primary)' }}
                           >
                             <FiSend className="w-3.5 h-3.5" />
                           </button>
@@ -442,7 +442,7 @@ export default function SupervisorRequiredDaysPage() {
                         <img src={intern.avatar.url} alt={intern.name} className="w-7 h-7 rounded-full object-cover" />
                       ) : (
                         <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white"
-                             style={{ background: 'linear-gradient(135deg, var(--admin-primary), var(--admin-secondary))' }}>
+                             style={{ background: 'linear-gradient(135deg, var(--supervisor-primary), var(--supervisor-secondary))' }}>
                           {intern.name.charAt(0).toUpperCase()}
                         </div>
                       )}
@@ -465,7 +465,7 @@ export default function SupervisorRequiredDaysPage() {
                 onClick={handleAssign}
                 disabled={assigning || assignableInterns.length === 0}
                 className="flex-1 py-2.5 rounded-xl font-semibold text-sm disabled:opacity-50"
-                style={{ background: 'linear-gradient(135deg, var(--admin-primary), var(--admin-secondary))', color: '#000' }}
+                style={{ background: 'linear-gradient(135deg, var(--supervisor-primary), var(--supervisor-secondary))', color: '#fff' }}
               >
                 {assigning ? 'Assigning…' : 'Assign'}
               </button>

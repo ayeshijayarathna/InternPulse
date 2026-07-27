@@ -1,29 +1,33 @@
 import { useEffect, useState, useRef } from 'react';
 import {
-  FiSend, FiPaperclip, FiX, FiAlertTriangle, FiCheckCircle, FiFile, FiImage
+  FiSend, FiPaperclip, FiX, FiAlertTriangle, FiCheckCircle, FiFile, FiImage, FiFolder
 } from 'react-icons/fi';
 import axiosInstance from '../../../api/axiosInstance';
 
-// Blocker removed — only Progress Update and Self Task
 const TYPE_OPTIONS = [
   { id: 'update',    label: 'Progress Update', desc: 'Share what you have done'        },
   { id: 'self_task', label: 'Self Task',        desc: 'Task you are doing on your own' },
 ];
 
 export default function SubmitUpdatePage() {
-  const [tasks,   setTasks]   = useState([]);
-  const [type,    setType]    = useState('update');
-  const [taskId,  setTaskId]  = useState('');
-  const [content, setContent] = useState('');
-  const [files,   setFiles]   = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [error,   setError]   = useState('');
+  const [tasks,    setTasks]    = useState([]);
+  const [projects, setProjects] = useState([]);
+  const [type,     setType]     = useState('update');
+  const [taskId,   setTaskId]   = useState('');
+  const [projectId, setProjectId] = useState('');
+  const [content,  setContent]  = useState('');
+  const [files,    setFiles]    = useState([]);
+  const [loading,  setLoading]  = useState(false);
+  const [success,  setSuccess]  = useState(false);
+  const [error,    setError]    = useState('');
   const fileRef = useRef();
 
   useEffect(() => {
     axiosInstance.get('/tasks/my')
       .then(res => setTasks(res.data))
+      .catch(console.error);
+    axiosInstance.get('/projects/my')
+      .then(res => setProjects(res.data))
       .catch(console.error);
   }, []);
 
@@ -56,7 +60,8 @@ export default function SubmitUpdatePage() {
       const formData = new FormData();
       formData.append('type', type);
       formData.append('content', content.trim());
-      if (taskId && type !== 'self_task') formData.append('taskId', taskId);
+      if (taskId    && type !== 'self_task') formData.append('taskId', taskId);
+      if (projectId && type !== 'self_task') formData.append('projectId', projectId);
       files.forEach(f => formData.append('attachments', f));
 
       await axiosInstance.post('/updates', formData, {
@@ -66,6 +71,7 @@ export default function SubmitUpdatePage() {
       setSuccess(true);
       setContent('');
       setTaskId('');
+      setProjectId('');
       setFiles([]);
       setTimeout(() => setSuccess(false), 3000);
     } catch (err) {
@@ -74,6 +80,13 @@ export default function SubmitUpdatePage() {
       setLoading(false);
     }
   };
+
+  const tasksForProject = projectId
+    ? tasks.filter(t => {
+        const pid = t.projectId ? (typeof t.projectId === 'object' ? t.projectId._id : t.projectId) : null;
+        return pid === projectId;
+      })
+    : tasks;
 
   return (
     <div className="space-y-6 max-w-2xl">
@@ -110,7 +123,7 @@ export default function SubmitUpdatePage() {
       <div className="rounded-2xl border p-6 space-y-6"
            style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
 
-        {/* Type selector — 2 options, side by side */}
+        {/* Type selector */}
         <div>
           <label className="block text-xs font-semibold mb-3 uppercase tracking-wider"
                  style={{ color: 'var(--text-secondary)' }}>
@@ -120,7 +133,7 @@ export default function SubmitUpdatePage() {
             {TYPE_OPTIONS.map(opt => (
               <button
                 key={opt.id}
-                onClick={() => { setType(opt.id); if (opt.id === 'self_task') setTaskId(''); }}
+                onClick={() => { setType(opt.id); if (opt.id === 'self_task') { setTaskId(''); setProjectId(''); }}}
                 className="p-3 rounded-xl border text-left transition-all"
                 style={{
                   background:  type === opt.id
@@ -136,7 +149,30 @@ export default function SubmitUpdatePage() {
           </div>
         </div>
 
-        {/* Task selector (hidden for self_task) */}
+        {/* Project selector (hidden for self_task) */}
+        {type !== 'self_task' && projects.length > 0 && (
+          <div>
+            <label className="block text-xs font-semibold mb-2 uppercase tracking-wider"
+                   style={{ color: 'var(--text-secondary)' }}>
+              Assigned Project <span style={{ color: 'var(--text-muted)' }}>(optional)</span>
+            </label>
+            <select
+              value={projectId}
+              onChange={e => { setProjectId(e.target.value); setTaskId(''); }}
+              className="w-full px-4 py-3 rounded-xl border text-sm outline-none transition-all"
+              style={{ background: 'var(--bg-surface)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
+            >
+              <option value="">— No specific project —</option>
+              {projects.map(p => (
+                <option key={p._id} value={p._id}>
+                  {p.name} {p.status ? `(${p.status})` : ''}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {/* Task selector (hidden for self_task, filtered by project) */}
         {type !== 'self_task' && (
           <div>
             <label className="block text-xs font-semibold mb-2 uppercase tracking-wider"
@@ -147,17 +183,18 @@ export default function SubmitUpdatePage() {
               value={taskId}
               onChange={e => setTaskId(e.target.value)}
               className="w-full px-4 py-3 rounded-xl border text-sm outline-none transition-all"
-              style={{
-                background:  'var(--bg-surface)',
-                borderColor: 'var(--border)',
-                color:       'var(--text-primary)',
-              }}
+              style={{ background: 'var(--bg-surface)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
             >
               <option value="">— No specific task —</option>
-              {tasks.map(t => (
+              {tasksForProject.map(t => (
                 <option key={t._id} value={t._id}>{t.title}</option>
               ))}
             </select>
+            {projectId && tasksForProject.length === 0 && (
+              <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+                No tasks found for this project
+              </p>
+            )}
           </div>
         )}
 
@@ -177,11 +214,7 @@ export default function SubmitUpdatePage() {
                 : 'Describe your progress and what you have done...'
             }
             className="w-full px-4 py-3 rounded-xl border text-sm outline-none resize-none transition-all"
-            style={{
-              background:  'var(--bg-surface)',
-              borderColor: 'var(--border)',
-              color:       'var(--text-primary)',
-            }}
+            style={{ background: 'var(--bg-surface)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
             onFocus={e => e.target.style.borderColor = 'var(--intern-primary)'}
             onBlur={e  => e.target.style.borderColor = 'var(--border)'}
           />

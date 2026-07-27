@@ -22,6 +22,12 @@
   --admin-accent:    #fbbf24;
   --admin-glow:      #f59e0b88;
 
+  /* Brand — Supervisor (green-blue teal) */
+  --supervisor-primary:   #059669;
+  --supervisor-secondary: #0891b2;
+  --supervisor-accent:    #34d399;
+  --supervisor-glow:      #059669aa;
+
   /* Status colours */
   --success:  #22c55e;
   --warning:  #f59e0b;
@@ -95,6 +101,7 @@ body {
 
   --intern-glow: #7c3aed44;
   --admin-glow:  #f59e0b44;
+  --supervisor-glow: #05966944;
 }
 
 [data-theme="light"] body {
@@ -102,18 +109,37 @@ body {
   color: var(--text-primary);
 }
 
-/* Override all hardcoded white text classes in light mode */
+/* ═══ ALL .text-white → dark in light mode (blanket for white card backgrounds) */
 [data-theme="light"] .text-white { color: var(--text-primary) !important; }
+[data-theme="light"] [class*="text-white/"] { color: var(--text-primary) !important; }
+[data-theme="light"] [style*="color: #fff"] { color: var(--text-primary) !important; }
+[data-theme="light"] [style*="color:'#fff'"] { color: var(--text-primary) !important; }
+
+/* ═══ EXCEPTION: Preserve white inside gradient backgrounds ═══ */
+/* Tailwind gradient wrappers (icon badges, avatar initials) */
+[data-theme="light"] .bg-gradient-to-br .text-white,
+[data-theme="light"] .bg-gradient-to-r .text-white,
+[data-theme="light"] .bg-gradient-to-l .text-white,
+[data-theme="light"] .bg-gradient-to-br [class*="text-white/"],
+[data-theme="light"] .bg-gradient-to-r [class*="text-white/"],
+[data-theme="light"] .bg-gradient-to-l [class*="text-white/"] { color: #fff !important; }
+
+/* Inline gradient backgrounds (avatar initials, stat card icons) */
+[data-theme="light"] [style*="linear-gradient"] .text-white,
+[data-theme="light"] [style*="linear-gradient"] [class*="text-white/"],
+[data-theme="light"] [style*="linear-gradient"][class*="text-white"],
+[data-theme="light"] [style*="linear-gradient"] [style*="color: #fff"] { color: #fff !important; }
+
+/* Gradient buttons (text + spans + child elements) */
+[data-theme="light"] button[style*="linear-gradient"] span,
+[data-theme="light"] button[style*="linear-gradient"] .text-white { color: #fff !important; }
+
 [data-theme="light"] .text-gray-400 { color: var(--text-secondary) !important; }
 [data-theme="light"] .text-gray-600 { color: var(--text-muted) !important; }
 
-/* Override hover states */
+/* Override hover states for dark-theme hovers */
 [data-theme="light"] .hover\:bg-white\/5:hover { background-color: rgba(0,0,0,0.04) !important; }
-
-/* Override inline color: '#fff' and color: '#000' for sidebar active items */
-[data-theme="light"] [style*="color: #fff"] { color: var(--text-primary) !important; }
-[data-theme="light"] [style*="color:'#fff'"] { color: var(--text-primary) !important; }
-[data-theme="light"] [style*="color: '#fff'"] { color: var(--text-primary) !important; }
+[data-theme="light"] .hover\:bg-red-50\/dark\:hover\:bg-red-50:hover { background-color: rgba(239,68,68,0.08) !important; }
 
 [data-theme="light"] ::-webkit-scrollbar-track { background: var(--bg-base); }
 [data-theme="light"] ::-webkit-scrollbar-thumb { background: #c1c9d6; }

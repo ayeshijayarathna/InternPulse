@@ -70,7 +70,7 @@ export default function SupervisorChartsPage() {
       {/* Header */}
       <div className="flex items-center gap-4 mb-8">
         <div className="w-12 h-12 rounded-xl flex items-center justify-center"
-             style={{ background: 'linear-gradient(135deg, #3b82f6, #2563eb)' }}>
+             style={{ background: 'linear-gradient(135deg, var(--supervisor-primary), var(--supervisor-secondary))' }}>
           <FiBarChart2 className="w-6 h-6 text-white" />
         </div>
         <div>

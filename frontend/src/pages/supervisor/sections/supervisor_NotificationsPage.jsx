@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import {
   FiBell, FiCheckCircle, FiFilter, FiCheck,
   FiSend, FiUsers, FiMail, FiMessageSquare, FiCalendar,
@@ -70,9 +70,9 @@ export default function SupervisorNotificationsPage() {
         <div className="flex items-center gap-3">
           <div
             className="w-12 h-12 rounded-2xl flex items-center justify-center"
-            style={{ background: 'linear-gradient(135deg, var(--admin-primary), var(--admin-secondary))' }}
+            style={{ background: 'linear-gradient(135deg, var(--supervisor-primary), var(--supervisor-secondary))' }}
           >
-            <FiBell className="w-6 h-6 text-black" />
+            <FiBell className="w-6 h-6 text-white" />
           </div>
           <div>
             <h2 className="text-2xl font-bold text-white" style={{ fontFamily: 'var(--font-display)' }}>
@@ -88,7 +88,7 @@ export default function SupervisorNotificationsPage() {
           <button
             onClick={markAllRead}
             className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all hover:opacity-80"
-            style={{ background: 'rgba(249,115,22,0.15)', color: 'var(--admin-primary)' }}
+            style={{ background: 'rgba(249,115,22,0.15)', color: 'var(--supervisor-primary)' }}
           >
             <FiCheckCircle className="w-4 h-4" />
             Mark all as read
@@ -127,7 +127,7 @@ export default function SupervisorNotificationsPage() {
             className="px-4 py-1.5 rounded-xl text-sm font-semibold transition-all"
             style={{
               background: filter === f.id
-                ? 'linear-gradient(135deg, var(--admin-primary), var(--admin-secondary))'
+                ? 'linear-gradient(135deg, var(--supervisor-primary), var(--supervisor-secondary))'
                 : 'var(--bg-card)',
               color:  filter === f.id ? '#000' : 'var(--text-secondary)',
               border: `1px solid ${filter === f.id ? 'transparent' : 'var(--border)'}`,
@@ -137,7 +137,7 @@ export default function SupervisorNotificationsPage() {
             {f.id === 'unread' && supervisorUnread > 0 && (
               <span
                 className="ml-1.5 px-1.5 py-0.5 rounded text-[10px] font-bold"
-                style={{ background: 'rgba(0,0,0,0.2)', color: filter==='unread' ? '#000' : 'var(--admin-primary)' }}
+                style={{ background: 'rgba(0,0,0,0.2)', color: filter==='unread' ? '#000' : 'var(--supervisor-primary)' }}
               >
                 {supervisorUnread}
               </span>
@@ -166,7 +166,7 @@ export default function SupervisorNotificationsPage() {
               <div
                 key={n._id}
                 onClick={() => !n.isRead && markRead(n._id)}
-                className="flex items-start gap-4 p-4 rounded-xl border transition-all cursor-pointer hover:border-[var(--admin-primary)]"
+                className="flex items-start gap-4 p-4 rounded-xl border transition-all cursor-pointer hover:border-[var(--supervisor-primary)]"
                 style={{
                   background:  n.isRead ? 'var(--bg-card)' : 'rgba(249,115,22,0.05)',
                   borderColor: n.isRead ? 'var(--border)' : 'rgba(249,115,22,0.3)',
@@ -188,7 +188,7 @@ export default function SupervisorNotificationsPage() {
                       <p className="text-sm mt-0.5 text-gray-400 line-clamp-2">{n.message}</p>
                     </div>
                     {!n.isRead
-                      ? <span className="w-2.5 h-2.5 rounded-full flex-shrink-0 mt-1" style={{ background: 'var(--admin-primary)' }} />
+                      ? <span className="w-2.5 h-2.5 rounded-full flex-shrink-0 mt-1" style={{ background: 'var(--supervisor-primary)' }} />
                       : <FiCheck className="w-4 h-4 text-gray-600 flex-shrink-0 mt-0.5" />
                     }
                   </div>

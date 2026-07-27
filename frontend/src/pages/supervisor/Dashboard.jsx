@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -34,8 +34,8 @@ export default function SupervisorDashboard() {
   const handleLogout = () => { logout(); navigate('/system/admin'); };
 
   const navItems = [
-    { id: 'overview',       label: 'Overview',       icon: FiActivity      },
     { id: 'analytics',      label: 'Analytics',      icon: FiBarChart2     },
+    { id: 'overview',       label: 'Overview',       icon: FiActivity      },
     { id: 'projects',       label: 'Projects',       icon: FiFolder        },
     { id: 'interns',        label: 'Interns',         icon: FiUsers         },
     { id: 'tasks',          label: 'Tasks',           icon: FiCheckSquare   },
@@ -72,20 +72,20 @@ export default function SupervisorDashboard() {
            style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 rounded-lg hover:bg-white/5">
+            <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5">
               {sidebarOpen ? <FiX className="w-5 h-5" style={{ color: 'var(--text-primary)' }} /> : <FiMenu className="w-5 h-5" style={{ color: 'var(--text-primary)' }} />}
             </button>
-            <h1 className="text-lg font-bold" style={{ fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}>InternPulse</h1>
+            <h1 className="text-lg font-bold bg-gradient-to-r from-[#059669] to-[#0891b2] bg-clip-text text-transparent" style={{ fontFamily: 'var(--font-display)' }}>InternPulse</h1>
           </div>
           <div className="flex items-center gap-2">
-            <button onClick={toggleTheme} className="p-2 rounded-xl hover:bg-white/5 transition-all"
+            <button onClick={toggleTheme} className="p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 transition-all"
                     style={{ color: 'var(--text-secondary)' }}>
               {theme === 'dark' ? <FiSun className="w-5 h-5" /> : <FiMoon className="w-5 h-5" />}
             </button>
             <AvatarUpload
               user={user} size="sm"
-              accentColor="var(--admin-primary)"
-              accentColor2="var(--admin-secondary)"
+              accentColor="var(--supervisor-primary)"
+              accentColor2="var(--supervisor-secondary)"
               onUpdate={(updated) => setUser?.(updated)}
             />
           </div>
@@ -100,7 +100,7 @@ export default function SupervisorDashboard() {
           <div className="flex flex-col h-full">
 
             <div className="p-6 border-b hidden lg:block" style={{ borderColor: 'var(--border)' }}>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-[var(--admin-primary)] to-[var(--admin-secondary)] bg-clip-text text-transparent"
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-[var(--supervisor-primary)] to-[var(--supervisor-secondary)] bg-clip-text text-transparent"
                   style={{ fontFamily: 'var(--font-display)' }}>InternPulse</h1>
               <p className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>Supervisor Dashboard</p>
             </div>
@@ -110,19 +110,19 @@ export default function SupervisorDashboard() {
               <div className="flex items-center gap-3">
                 <AvatarUpload
                   user={user} size="lg"
-                  accentColor="var(--admin-primary)"
-                  accentColor2="var(--admin-secondary)"
+                  accentColor="var(--supervisor-primary)"
+                  accentColor2="var(--supervisor-secondary)"
                   onUpdate={(updated) => setUser?.(updated)}
                 />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <div className="text-sm font-bold truncate" style={{ color: 'var(--text-primary)' }}>{user?.name}</div>
                     <button onClick={() => setActiveTab('notifications')}
-                            className="relative shrink-0 p-1.5 rounded-lg transition-all hover:bg-white/5">
+                            className="relative shrink-0 p-1.5 rounded-lg transition-all hover:bg-black/5 dark:hover:bg-white/5">
                       <FiBell className="w-4 h-4" style={{ color: 'var(--text-secondary)' }} />
                       {unreadCount > 0 && (
-                        <span className="absolute -top-1 -right-1 min-w-[16px] h-[16px] rounded-full flex items-center justify-center text-[9px] font-bold text-white"
-                              style={{ background: '#dc2626', padding: '0 3px' }}>
+                        <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-[16px] rounded-full flex items-center justify-center text-[9px] font-bold"
+                              style={{ background: 'var(--supervisor-primary)', color: '#fff', padding: '0 3px' }}>
                           {unreadCount > 99 ? '99+' : unreadCount}
                         </span>
                       )}
@@ -130,8 +130,8 @@ export default function SupervisorDashboard() {
                   </div>
                   <div className="text-xs truncate" style={{ color: 'var(--text-secondary)' }}>{user?.email}</div>
                   <div className="mt-1 flex items-center gap-2">
-                    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-semibold"
-                          style={{ background: 'linear-gradient(135deg, var(--admin-primary), var(--admin-secondary))', color: '#000' }}>
+                    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-semibold text-white"
+                          style={{ background: 'linear-gradient(135deg, var(--supervisor-primary), var(--supervisor-secondary))' }}>
                       <FiUsers className="w-3 h-3" />Supervisor
                     </span>
                     <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>click avatar</span>
@@ -148,12 +148,17 @@ export default function SupervisorDashboard() {
                     <button key={item.id}
                             onClick={() => { setActiveTab(item.id); setSidebarOpen(false); }}
                             className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all"
-                            style={{ background: isActive ? 'linear-gradient(135deg, var(--admin-primary), var(--admin-secondary))' : 'transparent', color: isActive ? '#000' : 'var(--text-secondary)' }}>
+                            style={{
+                              background: isActive ? 'rgba(8,145,178,0.15)' : 'transparent',
+                              color: 'var(--text-secondary)',
+                            }}>
                       <Icon className="w-5 h-5" />
                       <span className="flex-1 text-left">{item.label}</span>
                       {item.badge > 0 && (
-                        <span className="min-w-[20px] h-5 rounded-full flex items-center justify-center text-[11px] font-bold px-1"
-                              style={{ background: isActive ? 'rgba(0,0,0,0.2)' : 'var(--admin-primary)', color: '#000' }}>
+                        <span className="min-w-[20px] h-5 rounded-full flex items-center justify-center text-[11px] font-bold px-1 text-white"
+                              style={{
+                                background: isActive ? 'rgba(8,145,178,0.25)' : 'rgba(8,145,178,0.15)',
+                              }}>
                           {item.badge > 99 ? '99+' : item.badge}
                         </span>
                       )}
@@ -165,13 +170,13 @@ export default function SupervisorDashboard() {
 
             <div className="p-4 border-t space-y-2" style={{ borderColor: 'var(--border)' }}>
               <button onClick={toggleTheme}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-semibold transition-all hover:bg-white/5"
+                      className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-semibold transition-all hover:bg-black/5 dark:hover:bg-white/5"
                       style={{ color: 'var(--text-secondary)' }}>
                 {theme === 'dark' ? <FiSun className="w-5 h-5" /> : <FiMoon className="w-5 h-5" />}
                 <span>{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
               </button>
               <button onClick={handleLogout}
-                      className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all hover:bg-red-500/10 text-red-400">
+                      className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all hover:bg-red-50 dark:hover:bg-red-50 text-red-500">
                 <FiLogOut className="w-5 h-5" /><span>Sign Out</span>
               </button>
             </div>

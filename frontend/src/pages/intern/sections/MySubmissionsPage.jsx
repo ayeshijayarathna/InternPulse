@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
   FiFileText, FiRefreshCw, FiPaperclip, FiImage,
-  FiCheckCircle, FiZap, FiLock, FiDownload
+  FiCheckCircle, FiZap, FiLock, FiDownload, FiFolder
 } from 'react-icons/fi';
 import axiosInstance from '../../../api/axiosInstance';
 
@@ -58,10 +58,16 @@ export default function MySubmissionsPage() {
 
   const filtered = filter === 'all'
     ? submissions
-    : submissions.filter(s => s.type === filter);
+    : filter === 'completed'
+      ? submissions.filter(s => s.status === 'completed')
+      : filter === 'pending'
+        ? submissions.filter(s => s.status !== 'completed')
+        : submissions.filter(s => s.type === filter);
 
   const filterTabs = [
     { id: 'all',       label: 'All',        count: submissions.length },
+    { id: 'completed', label: 'Completed',  count: submissions.filter(s => s.status === 'completed').length },
+    { id: 'pending',   label: 'Pending',    count: submissions.filter(s => s.status !== 'completed').length },
     { id: 'update',    label: 'Updates',    count: submissions.filter(s => s.type === 'update').length    },
     { id: 'self_task', label: 'Self Tasks', count: submissions.filter(s => s.type === 'self_task').length },
   ];
@@ -139,6 +145,24 @@ export default function MySubmissionsPage() {
                             style={{ color: meta.color, background: meta.bg }}>
                         {meta.label}
                       </span>
+                      {sub.status === 'completed' && (
+                        <span className="text-xs font-bold px-2 py-0.5 rounded"
+                              style={{ color: '#22c55e', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.25)' }}>
+                          ✓ Completed
+                        </span>
+                      )}
+                      {sub.status !== 'completed' && (
+                        <span className="text-xs font-bold px-2 py-0.5 rounded"
+                              style={{ color: '#f59e0b', background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.25)' }}>
+                          Pending
+                        </span>
+                      )}
+                      {sub.projectId && (
+                        <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded"
+                              style={{ background: `${sub.projectId.color}20`, color: sub.projectId.color, border: `1px solid ${sub.projectId.color}40` }}>
+                          <FiFolder className="w-3 h-3" />{sub.projectId.name}
+                        </span>
+                      )}
                       {sub.taskId?.title && (
                         <span className="text-xs px-2 py-0.5 rounded"
                               style={{ color: 'var(--text-secondary)', background: 'rgba(255,255,255,0.05)' }}>

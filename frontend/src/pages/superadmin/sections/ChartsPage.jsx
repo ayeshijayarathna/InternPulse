@@ -39,7 +39,7 @@ export default function ChartsPage() {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="w-8 h-8 rounded-full border-2 animate-spin"
-             style={{ borderColor: '#dc2626', borderTopColor: 'transparent' }} />
+             style={{ borderColor: '#dc2626', borderTopColor: '#f59e0b' }} />
       </div>
     );
   }
@@ -97,7 +97,7 @@ export default function ChartsPage() {
          style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
       <div className="px-5 py-4 border-b flex items-center gap-2"
            style={{ borderColor: 'var(--border)' }}>
-        <div className="p-1.5 rounded-lg" style={{ background: 'rgba(220,38,38,0.1)' }}>
+        <div className="p-1.5 rounded-lg" style={{ background: 'linear-gradient(135deg, rgba(220,38,38,0.15), rgba(245,158,11,0.15))' }}>
           {icon}
         </div>
         <h3 className="font-bold text-white text-sm" style={{ fontFamily: 'var(--font-display)' }}>
@@ -245,60 +245,7 @@ export default function ChartsPage() {
           </ResponsiveContainer>
         )}
 
-        {/* 7. Registration Timeline (Area) */}
-        {chartCard('User Registration Timeline (30 Days)', <FiTrendingUp className="w-4 h-4" style={{ color: '#dc2626' }} />,
-          data.registrationTimeline.length > 0 ? (
-            <ResponsiveContainer width="100%" height={300}>
-              <AreaChart data={data.registrationTimeline} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
-                <defs>
-                  <linearGradient id="gradSup" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#dc2626" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#dc2626" stopOpacity={0} />
-                  </linearGradient>
-                  <linearGradient id="gradInt" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#f59e0b" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                <XAxis dataKey="date" tick={{ fill: '#999', fontSize: 10 }} />
-                <YAxis tick={{ fill: '#999', fontSize: 11 }} allowDecimals={false} />
-                <Tooltip content={<CustomTooltip />} />
-                <Legend wrapperStyle={{ fontSize: 12, color: '#ccc' }} />
-                <Area type="monotone" dataKey="supervisors" name="Supervisors" stroke="#dc2626"
-                      fill="url(#gradSup)" strokeWidth={2} />
-                <Area type="monotone" dataKey="interns" name="Interns" stroke="#f59e0b"
-                      fill="url(#gradInt)" strokeWidth={2} />
-              </AreaChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="text-center py-10 text-sm" style={{ color: 'var(--text-muted)' }}>
-              No registration data in the last 30 days
-            </div>
-          )
-        )}
-
-        {/* 8. Task Creation Timeline (Line) */}
-        {chartCard('Task Creation Trend (30 Days)', <FiTrendingUp className="w-4 h-4" style={{ color: '#dc2626' }} />,
-          data.taskTimeline.length > 0 ? (
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={data.taskTimeline} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                <XAxis dataKey="date" tick={{ fill: '#999', fontSize: 10 }} />
-                <YAxis tick={{ fill: '#999', fontSize: 11 }} allowDecimals={false} />
-                <Tooltip content={<CustomTooltip />} />
-                <Line type="monotone" dataKey="tasks" name="Tasks Created" stroke="#3b82f6"
-                      strokeWidth={2} dot={{ fill: '#3b82f6', r: 4 }} activeDot={{ r: 6 }} />
-              </LineChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="text-center py-10 text-sm" style={{ color: 'var(--text-muted)' }}>
-              No task data in the last 30 days
-            </div>
-          )
-        )}
-
-        {/* 9. Engagement Radar */}
+        {/* 7. Engagement Radar */}
         {chartCard('Platform Engagement', <FiActivity className="w-4 h-4" style={{ color: '#dc2626' }} />,
           <ResponsiveContainer width="100%" height={300}>
             <RadarChart data={engagementData} cx="50%" cy="50%" outerRadius="70%">
@@ -311,7 +258,7 @@ export default function ChartsPage() {
           </ResponsiveContainer>
         )}
 
-        {/* 10. Inquiry Timeline (Area) */}
+        {/* 8. Inquiry Timeline (Area) */}
         {chartCard('Inquiry Trend (30 Days)', <FiTrendingUp className="w-4 h-4" style={{ color: '#dc2626' }} />,
           data.inquiryTimeline.length > 0 ? (
             <ResponsiveContainer width="100%" height={300}>

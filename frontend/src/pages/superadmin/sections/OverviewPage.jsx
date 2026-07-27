@@ -94,7 +94,7 @@ export default function OverviewPage({ setActiveTab }) {
               style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}
             />
           </div>
-          <button onClick={() => setActiveTab('supervisors')}
+                  <button onClick={() => setActiveTab('supervisors')}
                   className="flex items-center gap-1 text-xs font-semibold shrink-0"
                   style={{ color: '#dc2626' }}>
             Manage all <FiArrowRight className="w-3 h-3" />
@@ -115,7 +115,7 @@ export default function OverviewPage({ setActiveTab }) {
                          className="w-9 h-9 rounded-full object-cover" />
                   ) : (
                     <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold text-white"
-                         style={{ background: 'linear-gradient(135deg, #dc2626, #b91c1c)' }}>
+                         style={{ background: 'linear-gradient(135deg, #dc2626, #f59e0b)' }}>
                       {sup.name.charAt(0).toUpperCase()}
                     </div>
                   )}
