@@ -139,21 +139,24 @@ export default function RecordBookPage() {
   const handleSaveNotes = () => saveRecord();
   const handleSaveSummary = () => saveRecord();
 
-  const handleExportPDF = () => {
-    const token = localStorage.getItem('token');
-    const url = `${axiosInstance.defaults.baseURL}/record-book/export/${formatDate(selectedDate)}`;
-    fetch(url, { headers: { Authorization: `Bearer ${token}` } })
-      .then(r => r.blob())
-      .then(blob => {
-        const blobUrl = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = blobUrl;
-        link.download = `record_${formatDate(selectedDate)}.html`;
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        window.URL.revokeObjectURL(blobUrl);
-      });
+  const handleExportPDF = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const url = `${axiosInstance.defaults.baseURL}/record-book/export/${formatDate(selectedDate)}`;
+      const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+      if (!res.ok) throw new Error('Failed to download');
+      const blob = await res.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = `record_${formatDate(selectedDate)}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (err) {
+      console.error('PDF download failed:', err);
+    }
   };
 
   const isToday = formatDate(selectedDate) === formatDate(today);
